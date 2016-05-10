@@ -1,10 +1,52 @@
-#include <string.h>
+/*
+ * Nuklear - v1.00 - public domain
+ * no warrenty implied; use at your own risk.
+ * authored from 2015-2016 by Micha Mettke
+ */
+/*
+ * ==============================================================
+ *
+ *                              API
+ *
+ * ===============================================================
+ */
+#ifndef NK_GLFW_GL3_H_
+#define NK_GLFW_GL3_H_
 
-#define NK_IMPLEMENTATION
-#include "nuklear_glfw.h"
-#include "../../nuklear.h"
+#include <GLFW/glfw3.h>
 
+enum nk_glfw_init_state{
+    NK_GLFW3_DEFAULT=0,
+    NK_GLFW3_INSTALL_CALLBACKS
+};
+
+NK_API struct nk_context*   nk_glfw3_init(GLFWwindow *win, enum nk_glfw_init_state);
+NK_API void                 nk_glfw3_shutdown(void);
+NK_API void                 nk_glfw3_font_stash_begin(struct nk_font_atlas **atlas);
+NK_API void                 nk_glfw3_font_stash_end(void);
+NK_API void                 nk_glfw3_new_frame(void);
+NK_API void                 nk_glfw3_render(enum nk_anti_aliasing, int max_vertex_buffer, int max_element_buffer);
+
+NK_API void                 nk_glfw3_device_destroy(void);
+NK_API void                 nk_glfw3_device_create(void);
+
+NK_API void                 nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint);
+NK_API void                 nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff);
+
+#endif
+/*
+ * ==============================================================
+ *
+ *                          IMPLEMENTATION
+ *
+ * ===============================================================
+ */
+#ifdef NK_GLFW_GL3_IMPLEMENTATION
+
+#ifndef NK_GLFW_TEXT_MAX
 #define NK_GLFW_TEXT_MAX 256
+#endif
+
 struct nk_glfw_device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
@@ -27,6 +69,7 @@ static struct nk_glfw {
     struct nk_glfw_device ogl;
     struct nk_context ctx;
     struct nk_font_atlas atlas;
+    struct nk_vec2 fb_scale;
     unsigned int text[NK_GLFW_TEXT_MAX];
     int text_len;
     float scroll;
@@ -152,25 +195,14 @@ NK_API void
 nk_glfw3_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_buffer)
 {
     struct nk_glfw_device *dev = &glfw.ogl;
-    int width, height;
-    GLint last_prog, last_tex;
-    GLint last_ebo, last_vbo, last_vao;
     GLfloat ortho[4][4] = {
         {2.0f, 0.0f, 0.0f, 0.0f},
         {0.0f,-2.0f, 0.0f, 0.0f},
         {0.0f, 0.0f,-1.0f, 0.0f},
         {-1.0f,1.0f, 0.0f, 1.0f},
     };
-    glfwGetWindowSize(glfw.win, &width, &height);
-    ortho[0][0] /= (GLfloat)width;
-    ortho[1][1] /= (GLfloat)height;
-
-    /* save previous opengl state */
-    glGetIntegerv(GL_CURRENT_PROGRAM, &last_prog);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_tex);
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_vao);
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_ebo);
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vbo);
+    ortho[0][0] /= (GLfloat)glfw.width;
+    ortho[1][1] /= (GLfloat)glfw.height;
 
     /* setup global state */
     glEnable(GL_BLEND);
@@ -185,6 +217,7 @@ nk_glfw3_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
     glUseProgram(dev->prog);
     glUniform1i(dev->uniform_tex, 0);
     glUniformMatrix4fv(dev->uniform_proj, 1, GL_FALSE, &ortho[0][0]);
+    glViewport(0,0,(GLsizei)glfw.display_width,(GLsizei)glfw.display_height);
     {
         /* convert from command queue into draw list and draw to screen */
         const struct nk_draw_command *cmd;
@@ -224,24 +257,27 @@ nk_glfw3_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
         /* iterate over and execute each draw command */
-        nk_draw_foreach(cmd, &glfw.ctx, &dev->cmds) {
+        nk_draw_foreach(cmd, &glfw.ctx, &dev->cmds)
+        {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)cmd->clip_rect.x,
-                height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h),
-                (GLint)cmd->clip_rect.w, (GLint)cmd->clip_rect.h);
+            glScissor(
+                (GLint)(cmd->clip_rect.x * glfw.fb_scale.x),
+                (GLint)((glfw.display_height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * glfw.fb_scale.y),
+                (GLint)(cmd->clip_rect.w * glfw.fb_scale.x),
+                (GLint)(cmd->clip_rect.h * glfw.fb_scale.y));
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
         nk_clear(&glfw.ctx);
     }
 
-    /* restore old state */
-    glUseProgram((GLuint)last_prog);
-    glBindTexture(GL_TEXTURE_2D, (GLuint)last_tex);
-    glBindBuffer(GL_ARRAY_BUFFER, (GLuint)last_vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)last_ebo);
-    glBindVertexArray((GLuint)last_vao);
+    /* default OpenGL state */
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
 }
 
@@ -274,7 +310,7 @@ nk_glfw3_clipbard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = malloc((size_t)len+1);
+    str = (char*)malloc((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
@@ -328,6 +364,8 @@ nk_glfw3_new_frame(void)
 
     glfwGetWindowSize(win, &glfw.width, &glfw.height);
     glfwGetFramebufferSize(win, &glfw.display_width, &glfw.display_height);
+    glfw.fb_scale.x = (float)glfw.display_width/(float)glfw.width;
+    glfw.fb_scale.y = (float)glfw.display_height/(float)glfw.height;
 
     nk_input_begin(ctx);
     for (i = 0; i < glfw.text_len; ++i)
@@ -365,16 +403,12 @@ nk_glfw3_new_frame(void)
     }
 
     glfwGetCursorPos(win, &x, &y);
-    x *= (double)(int)((float)glfw.width/(float)glfw.display_width);
-    y *= (double)(int)((float)glfw.height/(float)glfw.display_height);
     nk_input_motion(ctx, (int)x, (int)y);
-
     nk_input_button(ctx, NK_BUTTON_LEFT, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
     nk_input_button(ctx, NK_BUTTON_MIDDLE, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS);
     nk_input_button(ctx, NK_BUTTON_RIGHT, (int)x, (int)y, glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
     nk_input_scroll(ctx, glfw.scroll);
     nk_input_end(&glfw.ctx);
-
     glfw.text_len = 0;
     glfw.scroll = 0;
 }
@@ -385,5 +419,7 @@ void nk_glfw3_shutdown(void)
     nk_font_atlas_clear(&glfw.atlas);
     nk_free(&glfw.ctx);
     nk_glfw3_device_destroy();
+    memset(&glfw, 0, sizeof(glfw));
 }
 
+#endif

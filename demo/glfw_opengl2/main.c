@@ -10,12 +10,7 @@
 #include <limits.h>
 #include <time.h>
 
-/* macros */
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-
-#define MAX_VERTEX_MEMORY 512 * 1024
-#define MAX_ELEMENT_MEMORY 128 * 1024
+#include <GLFW/glfw3.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -24,9 +19,15 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
-#define NK_ALLEGRO_IMPLEMENTATION
+#define NK_GLFW_GL2_IMPLEMENTATION
 #include "../../nuklear.h"
-#include "nuklear_allegro.h"
+#include "nuklear_glfw_gl2.h"
+
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
+
+#define MAX_VERTEX_BUFFER 512 * 1024
+#define MAX_ELEMENT_BUFFER 128 * 1024
 
 #define UNUSED(a) (void)a
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -51,39 +52,39 @@
  *                          DEMO
  *
  * ===============================================================*/
-int
-main(void)
+static void error_callback(int e, const char *d)
+{printf("Error %d: %s\n", e, d);}
+
+int main(void)
 {
-    int running = 1;
+    /* Platform */
+    static GLFWwindow *win;
+    int width = 0, height = 0;
     struct nk_context *ctx;
     struct nk_color background;
-    ALLEGRO_DISPLAY *display;
-    ALLEGRO_EVENT_QUEUE *queue;
 
-    /* Allegro */
-    al_init();
-    al_install_keyboard();
-    al_install_mouse();
-    al_init_primitives_addon();
-    display = al_create_display(WINDOW_WIDTH, WINDOW_HEIGHT);
-    al_set_window_title(display, "nuklear");
+    /* GLFW */
+    glfwSetErrorCallback(error_callback);
+    if (!glfwInit()) {
+        fprintf(stdout, "[GFLW] failed to init!\n");
+        exit(1);
+    }
+    win = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Demo", NULL, NULL);
+    glfwMakeContextCurrent(win);
+    glfwGetWindowSize(win, &width, &height);
 
-    queue = al_create_event_queue();
-    al_register_event_source(queue, al_get_display_event_source(display));
-    al_register_event_source(queue, al_get_keyboard_event_source());
-    al_register_event_source(queue, al_get_mouse_event_source());
-
-    ctx = nk_allegro_init(display, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+    /* GUI */
+    ctx = nk_glfw3_init(win, NK_GLFW3_INSTALL_CALLBACKS);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     {struct nk_font_atlas *atlas;
-    nk_allegro_font_stash_begin(&atlas);
+    nk_glfw3_font_stash_begin(&atlas);
     /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    /*struct nk_font *robot = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Robot-Regular.ttf", 14, 0);*/
+    /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 14, 0);*/
     /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
     /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
     /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
     /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
-    nk_allegro_font_stash_end();
+    nk_glfw3_font_stash_end();
     /*nk_style_set_font(ctx, &droid->handle);*/}
 
     /* style.c */
@@ -93,20 +94,15 @@ main(void)
     /*set_style(ctx, THEME_DARK);*/
 
     background = nk_rgb(28,48,62);
-    while (running)
+    while (!glfwWindowShouldClose(win))
     {
         /* Input */
-        ALLEGRO_EVENT evt;
-        nk_input_begin(ctx);
-        while (al_get_next_event(queue, &evt)) {
-            if (evt.type == ALLEGRO_EVENT_DISPLAY_CLOSE) goto cleanup;
-            nk_allegro_handle_event(&evt);
-        }
-        nk_input_end(ctx);
+        glfwPollEvents();
+        nk_glfw3_new_frame();
 
         /* GUI */
         {struct nk_panel layout;
-        if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 200, 200),
+        if (nk_begin(ctx, &layout, "Demo", nk_rect(50, 50, 230, 250),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
             NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
         {
@@ -116,6 +112,7 @@ main(void)
             nk_layout_row_static(ctx, 30, 80, 1);
             if (nk_button_label(ctx, "button", NK_BUTTON_DEFAULT))
                 fprintf(stdout, "button pressed\n");
+
             nk_layout_row_dynamic(ctx, 30, 2);
             if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
             if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
@@ -149,16 +146,19 @@ main(void)
         /* Draw */
         {float bg[4];
         nk_color_fv(bg, background);
-        al_clear_to_color(al_map_rgba_f(bg[0], bg[1], bg[2], bg[3]));
-        nk_allegro_render(NK_ANTI_ALIASING_ON);
-        al_flip_display();}
+        glfwGetWindowSize(win, &width, &height);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(bg[0], bg[1], bg[2], bg[3]);
+        /* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+         * with blending, scissor, face culling and depth test and defaults everything
+         * back into a default state. Make sure to either save and restore or
+         * reset your own state after drawing rendering the UI. */
+        nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+        glfwSwapBuffers(win);}
     }
-
-cleanup:
-    /* Cleanup */
-    if (queue) al_destroy_event_queue(queue);
-    if (display) al_destroy_display(display);
-    nk_allegro_shutdown();
+    nk_glfw3_shutdown();
+    glfwTerminate();
     return 0;
 }
 

@@ -3,8 +3,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <limits.h>
+#include <time.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -13,22 +13,22 @@
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_IMPLEMENTATION
-#define NK_GDI_IMPLEMENTATION
+#define NK_GDIP_IMPLEMENTATION
 #include "../../nuklear.h"
-#include "nuklear_gdi.h"
+#include "nuklear_gdip.h"
 
 /* ===============================================================
  *
  *                          EXAMPLE
  *
  * ===============================================================*/
-/* This are some code examples to provide a small overview of what can be
+/* These are some code examples to provide a small overview of what can be
  * done with this library. To try out an example uncomment the include
  * and the corresponding function. */
-#define UNUSED(a) (void)a
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-#define MAX(a,b) ((a) < (b) ? (b) : (a))
-#define LEN(a) (sizeof(a)/sizeof(a)[0])
+ #define UNUSED(a) (void)a
+ #define MIN(a,b) ((a) < (b) ? (a) : (b))
+ #define MAX(a,b) ((a) < (b) ? (b) : (a))
+ #define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 /*#include "../style.c"*/
 /*#include "../calculator.c"*/
@@ -43,31 +43,26 @@
 static LRESULT CALLBACK
 WindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    switch (msg)
-    {
+    switch (msg) {
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
     }
-
-    if (nk_gdi_handle_event(wnd, msg, wparam, lparam))
+    if (nk_gdip_handle_event(wnd, msg, wparam, lparam))
         return 0;
-
     return DefWindowProcW(wnd, msg, wparam, lparam);
 }
 
 int main(void)
 {
-    GdiFont* font;
+    GdipFont* font;
     struct nk_context *ctx;
 
     WNDCLASSW wc;
-    ATOM atom;
     RECT rect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     DWORD style = WS_OVERLAPPEDWINDOW;
     DWORD exstyle = WS_EX_APPWINDOW;
     HWND wnd;
-    HDC dc;
     int running = 1;
     int needs_refresh = 1;
 
@@ -78,18 +73,19 @@ int main(void)
     wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = L"NuklearWindowClass";
-    atom = RegisterClassW(&wc);
+    RegisterClassW(&wc);
 
     AdjustWindowRectEx(&rect, style, FALSE, exstyle);
+
     wnd = CreateWindowExW(exstyle, wc.lpszClassName, L"Nuklear Demo",
         style | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
         rect.right - rect.left, rect.bottom - rect.top,
         NULL, NULL, wc.hInstance, NULL);
-    dc = GetDC(wnd);
 
     /* GUI */
-    font = nk_gdifont_create("Arial", 14);
-    ctx = nk_gdi_init(font, dc, WINDOW_WIDTH, WINDOW_HEIGHT);
+    ctx = nk_gdip_init(wnd, WINDOW_WIDTH, WINDOW_HEIGHT);
+    font = nk_gdipfont_create("Arial", 12);
+    nk_gdip_set_font(font);
 
     /* style.c */
     /*set_style(ctx, THEME_WHITE);*/
@@ -111,7 +107,6 @@ int main(void)
             }
             needs_refresh = 1;
         } else needs_refresh = 0;
-
         while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT)
                 running = 0;
@@ -150,12 +145,11 @@ int main(void)
         /* ----------------------------------------- */
 
         /* Draw */
-        nk_gdi_render(nk_rgb(30,30,30));
+        nk_gdip_render(NK_ANTI_ALIASING_ON, nk_rgb(30,30,30));
     }
 
-    nk_gdifont_del(font);
-    ReleaseDC(wnd, dc);
+    nk_gdipfont_del(font);
+    nk_gdip_shutdown();
     UnregisterClassW(wc.lpszClassName, wc.hInstance);
     return 0;
 }
-

@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/vurtun/nuklear.png)](https://travis-ci.org/vurtun/nuklear)
+[![Build Status](https://travis-ci.org/vurtun/nuklear.svg)](https://travis-ci.org/vurtun/nuklear)
+
 # Nuklear
 This is a minimal state immediate mode graphical user interface toolkit
 written in ANSI C and licensed under public domain. It was designed as a simple
@@ -30,10 +31,10 @@ by default when included and allows including this header in other headers
 and does not contain the actual implementation.
 
 The implementation mode requires to define  the preprocessor macro
-`NK_IMPLEMENTATION` in *one* .c/.cpp file before #includeing this file, e.g.:
+`NK_IMPLEMENTATION` in *one* .c/.cpp file before `#include`ing this file, e.g.:
 ```c
-    #define NK_IMPLEMENTATION
-    #include "nuklear.h"
+#define NK_IMPLEMENTATION
+#include "nuklear.h"
 ```
 
 ## Gallery
@@ -42,6 +43,7 @@ The implementation mode requires to define  the preprocessor macro
 ![screen2](https://cloud.githubusercontent.com/assets/8057201/13538243/b04acd4c-e249-11e5-8fd2-ad7744a5b446.png)
 ![node](https://cloud.githubusercontent.com/assets/8057201/9976995/e81ac04a-5ef7-11e5-872b-acd54fbeee03.gif)
 ![skinning](https://cloud.githubusercontent.com/assets/8057201/14152357/25df939e-f6b3-11e5-8587-b19e863e0d1b.png)
+![gamepad](https://cloud.githubusercontent.com/assets/8057201/14902576/339926a8-0d9c-11e6-9fee-a8b73af04473.png)
 
 ## Example
 ```c
@@ -83,21 +85,21 @@ nk_end(ctx);
 ```
 ![example](https://cloud.githubusercontent.com/assets/8057201/10187981/584ecd68-675c-11e5-897c-822ef534a876.png)
 
-##CREDITS:
+## CREDITS:
 Developed by Micha Mettke and every direct or indirect contributor to the GitHub.
 
 
-Embeds stb_texedit, stb_truetype and stb_rectpack by Sean Barret (public domain)
-Embeds ProggyClean.ttf font by Tristan Grimmer (MIT license).
+Embeds `stb_texedit`, `stb_truetype` and `stb_rectpack` by Sean Barret (public domain)
+Embeds `ProggyClean.ttf` font by Tristan Grimmer (MIT license).
 
 
-Big thank you to Omar Cornut (ocornut@github) for his imgui library and
+Big thank you to Omar Cornut (ocornut@github) for his [imgui](https://github.com/ocornut/imgui) library and
 giving me the inspiration for this library, Casey Muratori for handmade hero
 and his original immediate mode graphical user interface idea and Sean
-Barret for his amazing single header libraries which restored my faith
+Barret for his amazing single header [libraries](https://github.com/nothings/stb) which restored my faith
 in libraries and brought me to create some of my own.
 
-##LICENSE:
+## LICENSE:
 This software is dual-licensed to the public domain and under the following
 license: you are granted a perpetual, irrevocable license to copy, modify,
 publish and distribute this file as you see fit.

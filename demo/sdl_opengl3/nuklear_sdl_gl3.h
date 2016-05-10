@@ -1,9 +1,42 @@
-#include <string.h>
-#include <SDL2/SDL.h>
+/*
+ * Nuklear - v1.00 - public domain
+ * no warrenty implied; use at your own risk.
+ * authored from 2015-2016 by Micha Mettke
+ */
+/*
+ * ==============================================================
+ *
+ *                              API
+ *
+ * ===============================================================
+ */
+#ifndef NK_SDL_GL3_H_
+#define NK_SDL_GL3_H_
 
-#include "nuklear_sdl.h"
-#define NK_IMPLEMENTATION
-#include "../../nuklear.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+
+NK_API struct nk_context*   nk_sdl_init(SDL_Window *win);
+NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
+NK_API void                 nk_sdl_font_stash_end(void);
+NK_API void                 nk_sdl_handle_event(SDL_Event *evt);
+NK_API void                 nk_sdl_render(enum nk_anti_aliasing , int max_vertex_buffer, int max_element_buffer);
+NK_API void                 nk_sdl_shutdown(void);
+NK_API void                 nk_sdl_device_destroy(void);
+NK_API void                 nk_sdl_device_create(void);
+
+#endif
+
+/*
+ * ==============================================================
+ *
+ *                          IMPLEMENTATION
+ *
+ * ===============================================================
+ */
+#ifdef NK_SDL_GL3_IMPLEMENTATION
+
+#include <string.h>
 
 struct nk_sdl_device {
     struct nk_buffer cmds;
@@ -147,8 +180,8 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
 {
     struct nk_sdl_device *dev = &sdl.ogl;
     int width, height;
-    GLint last_prog, last_tex;
-    GLint last_ebo, last_vbo, last_vao;
+    int display_width, display_height;
+    struct nk_vec2 scale;
     GLfloat ortho[4][4] = {
         {2.0f, 0.0f, 0.0f, 0.0f},
         {0.0f,-2.0f, 0.0f, 0.0f},
@@ -156,17 +189,15 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         {-1.0f,1.0f, 0.0f, 1.0f},
     };
     SDL_GetWindowSize(sdl.win, &width, &height);
+    SDL_GL_GetDrawableSize(sdl.win, &display_width, &display_height);
     ortho[0][0] /= (GLfloat)width;
     ortho[1][1] /= (GLfloat)height;
 
-    /* save previous opengl state */
-    glGetIntegerv(GL_CURRENT_PROGRAM, &last_prog);
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_tex);
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_vao);
-    glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_ebo);
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vbo);
+    scale.x = (float)display_width/(float)width;
+    scale.y = (float)display_height/(float)height;
 
     /* setup global state */
+    glViewport(0,0,display_width,display_height);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -221,21 +252,23 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
         nk_draw_foreach(cmd, &sdl.ctx, &dev->cmds) {
             if (!cmd->elem_count) continue;
             glBindTexture(GL_TEXTURE_2D, (GLuint)cmd->texture.id);
-            glScissor((GLint)cmd->clip_rect.x,
-                height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h),
-                (GLint)cmd->clip_rect.w, (GLint)cmd->clip_rect.h);
+            glScissor(
+                (GLint)(cmd->clip_rect.x * scale.x),
+                (GLint)((display_height - (GLint)(cmd->clip_rect.y + cmd->clip_rect.h)) * scale.y),
+                (GLint)(cmd->clip_rect.w * scale.x),
+                (GLint)(cmd->clip_rect.h * scale.y));
+
             glDrawElements(GL_TRIANGLES, (GLsizei)cmd->elem_count, GL_UNSIGNED_SHORT, offset);
             offset += cmd->elem_count;
         }
         nk_clear(&sdl.ctx);
     }
 
-    /* restore old state */
-    glUseProgram((GLuint)last_prog);
-    glBindTexture(GL_TEXTURE_2D, (GLuint)last_tex);
-    glBindBuffer(GL_ARRAY_BUFFER, (GLuint)last_vbo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, (GLuint)last_ebo);
-    glBindVertexArray((GLuint)last_vao);
+    glUseProgram(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
     glDisable(GL_SCISSOR_TEST);
 }
 
@@ -253,7 +286,7 @@ nk_sdl_clipbard_copy(nk_handle usr, const char *text, int len)
     char *str = 0;
     (void)usr;
     if (!len) return;
-    str = malloc((size_t)len+1);
+    str = (char*)malloc((size_t)len+1);
     if (!str) return;
     memcpy(str, text, (size_t)len);
     str[len] = '\0';
@@ -297,11 +330,7 @@ NK_API void
 nk_sdl_handle_event(SDL_Event *evt)
 {
     struct nk_context *ctx = &sdl.ctx;
-    if (evt->type == SDL_WINDOWEVENT) {
-        /* handle window resizing */
-        if (evt->window.event != SDL_WINDOWEVENT_RESIZED) return;
-        glViewport(0, 0, evt->window.data1, evt->window.data2);
-    } else if (evt->type == SDL_KEYUP || evt->type == SDL_KEYDOWN) {
+    if (evt->type == SDL_KEYUP || evt->type == SDL_KEYDOWN) {
         /* key events */
         int down = evt->type == SDL_KEYDOWN;
         const Uint8* state = SDL_GetKeyboardState(0);
@@ -370,5 +399,7 @@ void nk_sdl_shutdown(void)
     nk_font_atlas_clear(&sdl.atlas);
     nk_free(&sdl.ctx);
     nk_sdl_device_destroy();
+    memset(&sdl, 0, sizeof(sdl));
 }
 
+#endif

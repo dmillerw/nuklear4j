@@ -1,16 +1,46 @@
+/*
+ * Nuklear - v1.00 - public domain
+ * no warrenty implied; use at your own risk.
+ * authored from 2015-2016 by Micha Mettke
+ */
+/*
+ * ==============================================================
+ *
+ *                              API
+ *
+ * ===============================================================
+ */
+#ifndef NK_SDL_H_
+#define NK_SDL_H_
+
+#include <SDL/SDL.h>
+typedef struct nk_sdl_Font nk_sdl_Font;
+NK_API struct nk_context*   nk_sdl_init(SDL_Surface *screen_surface);
+NK_API void                 nk_sdl_handle_event(SDL_Event *evt);
+NK_API void                 nk_sdl_render(struct nk_color clear);
+NK_API void                 nk_sdl_shutdown(void);
+
+#endif
+/*
+ * ==============================================================
+ *
+ *                          IMPLEMENTATION
+ *
+ * ===============================================================
+ */
+#ifdef NK_SDL_IMPLEMENTATION
+
 #include <string.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
-
-#include "nuklear_sdl.h"
-#define NK_IMPLEMENTATION
-#include "../../nuklear.h"
 
 #ifndef MAX
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
 #endif
 
+#ifndef NK_SDL_MAX_POINTS
 #define NK_SDL_MAX_POINTS 128
+#endif
 
 struct nk_sdl_Font {
     int width;
@@ -438,4 +468,7 @@ nk_sdl_shutdown(void)
     free(sdl_font);
     nk_free(&sdl.ctx);
 }
+
+
+#endif
 
