@@ -2,7 +2,7 @@
 
 #include "nuklear_headless.h"
 #define NK_IMPLEMENTATION
-#include "../../nuklear.h"
+#include "../../../nuklear.h"
 
 #ifndef MAX
 #define MAX(a,b) ((a) < (b) ? (b) : (a))
@@ -10,6 +10,15 @@
 
 #define nk_headless_MAX_POINTS 128
 
+struct nk_headless_Surface {
+	long handle;
+	int w;
+	int h;
+};
+
+typedef struct nk_headless_Surface Headless_Surface;
+
+static Headless_Surface screen_surface;
 
 static struct nk_headless {
     Headless_Surface *screen_surface;
@@ -19,9 +28,45 @@ static struct nk_headless {
 static nk_headless_Font *headless_font;
 /* static SDL_Rect sdl_clip_rect; */
 
+#define NK_COMMAND_SCISSOR_SIZE 4
+#define NK_COMMAND_LINE_SIZE 9
+#define NK_COMMAND_CURVE_SIZE 1
+#define NK_COMMAND_RECT_SIZE 10
+#define NK_COMMAND_RECT_FILLED_SIZE 9
+#define NK_COMMAND_RECT_MULTI_COLOR_SIZE 1
+#define NK_COMMAND_CIRCLE_SIZE 9
+#define NK_COMMAND_CIRCLE_FILLED_SIZE 8
+#define NK_COMMAND_ARC_SIZE 1
+#define NK_COMMAND_ARC_FILLED_SIZE 1
+#define NK_COMMAND_TRIANGLE_SIZE 11
+#define NK_COMMAND_TRIANGLE_FILLED_SIZE 10
+#define NK_COMMAND_POLYGON_SIZE 1
+#define NK_COMMAND_POLYGON_FILLED_SIZE 1
+#define NK_COMMAND_POLYLINE_SIZE 1
+#define NK_COMMAND_TEXT_SIZE 13
+#define NK_COMMAND_IMAGE_SIZE 1
+
+#define BUFFER_INDEX_CMD_COUNT 0
+#define BUFFER_INDEX_CMD_START 1
+
+/*
+ * CMD_COUNT NK_COMMAND[CMD_SIZE ...] ...
+ */
+static int buffer_index;
+static int command_count;
+
+
 static void
-nk_headless_scissor(Headless_Surface *surface, float x, float y, float w, float h)
+nk_headless_scissor(int *draw_buffer, float x, float y, float w, float h)
 {
+
+	draw_buffer[buffer_index++] = NK_COMMAND_SCISSOR;
+	draw_buffer[buffer_index++] = NK_COMMAND_SCISSOR_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+
     /*
 	sdl_clip_rect.x = x;
     sdl_clip_rect.y = y;
@@ -32,17 +77,44 @@ nk_headless_scissor(Headless_Surface *surface, float x, float y, float w, float 
 }
 
 static void
-nk_headless_stroke_line(Headless_Surface *surface, short x0, short y0, short x1,
+nk_headless_stroke_line(int *draw_buffer, short x0, short y0, short x1,
     short y1, unsigned int line_thickness, struct nk_color col)
 {
+
+	draw_buffer[buffer_index++] = NK_COMMAND_LINE;
+	draw_buffer[buffer_index++] = NK_COMMAND_LINE_SIZE;
+	draw_buffer[buffer_index++] = x0;
+	draw_buffer[buffer_index++] = y0;
+	draw_buffer[buffer_index++] = x1;
+	draw_buffer[buffer_index++] = y1;
+	draw_buffer[buffer_index++] = line_thickness;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
+
     /* thickLineRGBA(surface, x0, y0, x1, y1, line_thickness, col.r, col.g, col.b, col.a); */
 }
 
 static void
-nk_headless_stroke_rect(Headless_Surface *surface, short x, short y, unsigned short w,
+nk_headless_stroke_rect(int *draw_buffer, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, unsigned short line_thickness, struct nk_color col)
 {
     /* Note: thickness is not used by default */
+	draw_buffer[buffer_index++] = NK_COMMAND_RECT;
+	draw_buffer[buffer_index++] = NK_COMMAND_RECT_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = r;
+	draw_buffer[buffer_index++] = line_thickness;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
+
+
 	/*
     if (r == 0) {
         rectangleRGBA(surface, x, y, x + w, y + h, col.r, col.g, col.b, col.a); 
@@ -53,9 +125,21 @@ nk_headless_stroke_rect(Headless_Surface *surface, short x, short y, unsigned sh
 }
 
 static void
-nk_headless_fill_rect(Headless_Surface *surface, short x, short y, unsigned short w,
+nk_headless_fill_rect(int *draw_buffer, short x, short y, unsigned short w,
     unsigned short h, unsigned short r, struct nk_color col)
 {
+	draw_buffer[buffer_index++] = NK_COMMAND_RECT_FILLED;
+	draw_buffer[buffer_index++] = NK_COMMAND_RECT_FILLED_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = r;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
+
 /*
     if (r == 0) {
         boxRGBA(surface, x, y, x + w, y + h, col.r, col.g, col.b, col.a); 
@@ -66,25 +150,54 @@ nk_headless_fill_rect(Headless_Surface *surface, short x, short y, unsigned shor
 }
 
 static void 
-nk_headless_fill_triangle(Headless_Surface *surface, short x0, short y0, short x1, short y1, short x2, short y2, struct nk_color col)
+nk_headless_fill_triangle(int *draw_buffer, short x0, short y0, short x1, short y1, short x2, short y2, struct nk_color col)
 {
+
+	/* Note: thickness is not used by default */
+		draw_buffer[buffer_index++] = NK_COMMAND_TRIANGLE_FILLED;
+		draw_buffer[buffer_index++] = NK_COMMAND_TRIANGLE_FILLED_SIZE;
+		draw_buffer[buffer_index++] = x0;
+		draw_buffer[buffer_index++] = y0;
+		draw_buffer[buffer_index++] = x1;
+		draw_buffer[buffer_index++] = y1;
+		draw_buffer[buffer_index++] = x2;
+		draw_buffer[buffer_index++] = y2;
+		draw_buffer[buffer_index++] = col.a;
+		draw_buffer[buffer_index++] = col.r;
+		draw_buffer[buffer_index++] = col.g;
+		draw_buffer[buffer_index++] = col.b;
 /*
     filledTrigonRGBA(surface, x0, y0, x1, y1, x2, y2, col.r, col.g, col.b, col.a);
 	*/
 }
 
 static void
-nk_headless_stroke_triangle(Headless_Surface *surface, short x0, short y0, short x1,
+nk_headless_stroke_triangle(int *draw_buffer, short x0, short y0, short x1,
     short y1, short x2, short y2, unsigned short line_thickness, struct nk_color col)
 {
     /* Note: thickness is not used by default */
+	draw_buffer[buffer_index++] = NK_COMMAND_TRIANGLE;
+	draw_buffer[buffer_index++] = NK_COMMAND_TRIANGLE_SIZE;
+	draw_buffer[buffer_index++] = x0;
+	draw_buffer[buffer_index++] = y0;
+	draw_buffer[buffer_index++] = x1;
+	draw_buffer[buffer_index++] = y1;
+	draw_buffer[buffer_index++] = x2;
+	draw_buffer[buffer_index++] = y2;
+	draw_buffer[buffer_index++] = line_thickness;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
+
+
 	/*
     aatrigonRGBA(surface, x0, y0, x1, y1, x2, y2, col.r, col.g, col.b, col.a); 
 	*/
 }
 
 static void
-nk_headless_fill_polygon(Headless_Surface *surface, const struct nk_vec2i *pnts, int count, struct nk_color col)
+nk_headless_fill_polygon(int *draw_buffer, const struct nk_vec2i *pnts, int count, struct nk_color col)
 {
     /*
 	Sint16 p_x[nk_headless_MAX_POINTS];
@@ -99,7 +212,7 @@ nk_headless_fill_polygon(Headless_Surface *surface, const struct nk_vec2i *pnts,
 }
 
 static void
-nk_headless_stroke_polygon(Headless_Surface *surface, const struct nk_vec2i *pnts, int count,
+nk_headless_stroke_polygon(int *draw_buffer, const struct nk_vec2i *pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
     /* Note: thickness is not used by default */
@@ -116,7 +229,7 @@ nk_headless_stroke_polygon(Headless_Surface *surface, const struct nk_vec2i *pnt
 }
 
 static void
-nk_headless_stroke_polyline(Headless_Surface *surface, const struct nk_vec2i *pnts,
+nk_headless_stroke_polyline(int *draw_buffer, const struct nk_vec2i *pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
 	/*
@@ -140,26 +253,49 @@ nk_headless_stroke_polyline(Headless_Surface *surface, const struct nk_vec2i *pn
 }
 
 static void
-nk_headless_fill_circle(Headless_Surface *surface, short x, short y, unsigned short w,
+nk_headless_fill_circle(int *draw_buffer, short x, short y, unsigned short w,
     unsigned short h, struct nk_color col)
 {
+
+	draw_buffer[buffer_index++] = NK_COMMAND_CIRCLE_FILLED;
+	draw_buffer[buffer_index++] = NK_COMMAND_CIRCLE_FILLED_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
+
 /*
     filledEllipseRGBA(surface,  x + w /2, y + h /2, w / 2, h / 2, col.r, col.g, col.b, col.a); 
 	*/
 }
 
 static void
-nk_headless_stroke_circle(Headless_Surface *surface, short x, short y, unsigned short w,
+nk_headless_stroke_circle(int *draw_buffer, short x, short y, unsigned short w,
     unsigned short h, unsigned short line_thickness, struct nk_color col)
 {
     /* Note: thickness is not used by default */
+	draw_buffer[buffer_index++] = NK_COMMAND_CIRCLE;
+	draw_buffer[buffer_index++] = NK_COMMAND_CIRCLE_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = line_thickness;
+	draw_buffer[buffer_index++] = col.a;
+	draw_buffer[buffer_index++] = col.r;
+	draw_buffer[buffer_index++] = col.g;
+	draw_buffer[buffer_index++] = col.b;
 	/*
     aaellipseRGBA (surface,  x + w /2, y + h /2, w / 2, h / 2, col.r, col.g, col.b, col.a); 
 	*/
 }
 
 static void
-nk_headless_stroke_curve(Headless_Surface *surface, struct nk_vec2i p1,
+nk_headless_stroke_curve(int *draw_buffer, struct nk_vec2i p1,
     struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4, unsigned int num_segments,
     unsigned short line_thickness, struct nk_color col)
 {
@@ -185,9 +321,33 @@ nk_headless_stroke_curve(Headless_Surface *surface, struct nk_vec2i p1,
 }
 
 static void
-nk_headless_draw_text(Headless_Surface *surface, short x, short y, unsigned short w, unsigned short h,
+nk_headless_draw_text(int *draw_buffer, short x, short y, unsigned short w, unsigned short h,
     const char *text, int len, nk_headless_Font *font, struct nk_color cbg, struct nk_color cfg)
 {
+
+	draw_buffer[buffer_index++] = NK_COMMAND_TEXT;
+	draw_buffer[buffer_index++] = NK_COMMAND_TEXT_SIZE + len;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = len;
+	draw_buffer[buffer_index++] = cbg.a;
+	draw_buffer[buffer_index++] = cbg.r;
+	draw_buffer[buffer_index++] = cbg.g;
+	draw_buffer[buffer_index++] = cbg.b;
+	draw_buffer[buffer_index++] = cfg.a;
+	draw_buffer[buffer_index++] = cfg.r;
+	draw_buffer[buffer_index++] = cfg.g;
+	draw_buffer[buffer_index++] = cfg.b;
+
+	//fprintf(stderr, "text native %i %i %i %i\n", x, y, w, h);
+
+	int i;
+	for (i = 0; i < len; i++) {
+		draw_buffer[buffer_index++] = text[i];
+	}
+
 	/*
     int i;
     nk_headless_fill_rect(surface, x, y, len * font->width, font->height, 0, cbg);
@@ -213,7 +373,7 @@ interpolate_color(struct nk_color c1, struct nk_color c2, struct nk_color *resul
 }
 
 static void
-nk_headless_fill_rect_multi_color(Headless_Surface *surface, short x, short y, unsigned short w, unsigned short h,
+nk_headless_fill_rect_multi_color(int *draw_buffer, short x, short y, unsigned short w, unsigned short h,
     struct nk_color left, struct nk_color top,  struct nk_color right, struct nk_color bottom)
 {
     struct nk_color X1, X2, Y;
@@ -232,10 +392,11 @@ nk_headless_fill_rect_multi_color(Headless_Surface *surface, short x, short y, u
     }
 }
 
-static void
-nk_headless_clear(Headless_Surface *surface, struct nk_color col)
+void
+nk_headless_clear(struct nk_color col)
 {
-	nk_headless_fill_rect(surface, 0, 0, surface->w, surface->h, 0, col);
+	//Headless_Surface *surface = headless.screen_surface;
+	//nk_headless_fill_rect(surface, 0, 0, surface->w, surface->h, 0, col);
 }
 
 static void
@@ -246,13 +407,16 @@ nk_headless_blit(Headless_Surface *surface)
 	*/
 }
 
-NK_API void
-nk_headless_render(struct nk_color clear)
+NK_API int*
+nk_headless_render(int *draw_buffer)
 {
     const struct nk_command *cmd;
 
+    command_count = 0;
+    buffer_index = BUFFER_INDEX_CMD_START;
+
     Headless_Surface *screen_surface = headless.screen_surface;
-    nk_headless_clear(screen_surface, clear);
+//    nk_headless_clear(screen_surface, clear);
 
     nk_foreach(cmd, &headless.ctx)
     {
@@ -260,67 +424,76 @@ nk_headless_render(struct nk_color clear)
         case NK_COMMAND_NOP: break;
         case NK_COMMAND_SCISSOR: {
             const struct nk_command_scissor *s =(const struct nk_command_scissor*)cmd;
-            nk_headless_scissor(screen_surface, s->x, s->y, s->w, s->h);
+            nk_headless_scissor(draw_buffer, s->x, s->y, s->w, s->h);
+            command_count++;
         } break;
         case NK_COMMAND_LINE: {
             const struct nk_command_line *l = (const struct nk_command_line *)cmd;
-            nk_headless_stroke_line(screen_surface, l->begin.x, l->begin.y, l->end.x,
+            nk_headless_stroke_line(draw_buffer, l->begin.x, l->begin.y, l->end.x,
                 l->end.y, l->line_thickness, l->color);
+            command_count++;
         } break;
         case NK_COMMAND_RECT: {
             const struct nk_command_rect *r = (const struct nk_command_rect *)cmd;
-            nk_headless_stroke_rect(screen_surface, r->x, r->y, r->w, r->h,
+            nk_headless_stroke_rect(draw_buffer, r->x, r->y, r->w, r->h,
                 (unsigned short)r->rounding, r->line_thickness, r->color);
+            command_count++;
         } break;
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled *)cmd;
-            nk_headless_fill_rect(screen_surface, r->x, r->y, r->w, r->h,
+            nk_headless_fill_rect(draw_buffer, r->x, r->y, r->w, r->h,
                 (unsigned short)r->rounding, r->color);
+            command_count++;
         } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle *)cmd;
-            nk_headless_stroke_circle(screen_surface, c->x, c->y, c->w, c->h, c->line_thickness, c->color);
+            nk_headless_stroke_circle(draw_buffer, c->x, c->y, c->w, c->h, c->line_thickness, c->color);
+            command_count++;
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
-            nk_headless_fill_circle(screen_surface, c->x, c->y, c->w, c->h, c->color);
+            nk_headless_fill_circle(draw_buffer, c->x, c->y, c->w, c->h, c->color);
+            command_count++;
         } break;
         case NK_COMMAND_TRIANGLE: {
             const struct nk_command_triangle*t = (const struct nk_command_triangle*)cmd;
-            nk_headless_stroke_triangle(screen_surface, t->a.x, t->a.y, t->b.x, t->b.y,
+            nk_headless_stroke_triangle(draw_buffer, t->a.x, t->a.y, t->b.x, t->b.y,
                 t->c.x, t->c.y, t->line_thickness, t->color);
+            command_count++;
         } break;
         case NK_COMMAND_TRIANGLE_FILLED: {
             const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled *)cmd;
-            nk_headless_fill_triangle(screen_surface, t->a.x, t->a.y, t->b.x, t->b.y, t->c.x, t->c.y, t->color);
+            nk_headless_fill_triangle(draw_buffer, t->a.x, t->a.y, t->b.x, t->b.y, t->c.x, t->c.y, t->color);
+            command_count++;
         } break;
         case NK_COMMAND_POLYGON: {
             const struct nk_command_polygon *p =(const struct nk_command_polygon*)cmd;
-            nk_headless_stroke_polygon(screen_surface, p->points, p->point_count, p->line_thickness,p->color);
+            nk_headless_stroke_polygon(draw_buffer, p->points, p->point_count, p->line_thickness,p->color);
         } break;
         case NK_COMMAND_POLYGON_FILLED: {
             const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled *)cmd;
-            nk_headless_fill_polygon(screen_surface, p->points, p->point_count, p->color);
+            nk_headless_fill_polygon(draw_buffer, p->points, p->point_count, p->color);
         } break;
         case NK_COMMAND_POLYLINE: {
             const struct nk_command_polyline *p = (const struct nk_command_polyline *)cmd;
-            nk_headless_stroke_polyline(screen_surface, p->points, p->point_count, p->line_thickness, p->color);
+            nk_headless_stroke_polyline(draw_buffer, p->points, p->point_count, p->line_thickness, p->color);
         } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
-            nk_headless_draw_text(screen_surface, t->x, t->y, t->w, t->h,
+            nk_headless_draw_text(draw_buffer, t->x, t->y, t->w, t->h,
                 (const char*)t->string, t->length,
                 (nk_headless_Font*)t->font->userdata.ptr,
                 t->background, t->foreground);
+            command_count++;
         } break;
         case NK_COMMAND_CURVE: {
             const struct nk_command_curve *q = (const struct nk_command_curve *)cmd;
-            nk_headless_stroke_curve(screen_surface, q->begin, q->ctrl[0], q->ctrl[1],
+            nk_headless_stroke_curve(draw_buffer, q->begin, q->ctrl[0], q->ctrl[1],
                 q->end, 22, q->line_thickness, q->color);
         } break;
         case NK_COMMAND_RECT_MULTI_COLOR: {
             const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color *)cmd;
-            nk_headless_fill_rect_multi_color(screen_surface, r->x, r->y, r->w, r->h, r->left, r->top, r->right, r->bottom);
+            nk_headless_fill_rect_multi_color(draw_buffer, r->x, r->y, r->w, r->h, r->left, r->top, r->right, r->bottom);
         } break;
         case NK_COMMAND_IMAGE:
         case NK_COMMAND_ARC:
@@ -328,8 +501,12 @@ nk_headless_render(struct nk_color clear)
         default: break;
         }
     }
-    nk_headless_blit(headless.screen_surface);
+
+    //nk_headless_blit(headless.screen_surface);
     nk_clear(&headless.ctx);
+
+    draw_buffer[BUFFER_INDEX_CMD_COUNT] = command_count;
+    return draw_buffer;
 
 }
 
@@ -352,12 +529,12 @@ nk_headless_get_text_width(nk_handle handle, float height, const char *text, int
 }
 
 NK_API struct nk_context*
-nk_headless_init(Headless_Surface *screen_surface)
+nk_headless_init(int w, int h, int max_char_width, int font_height)
 {
     struct nk_user_font font;
     headless_font = (nk_headless_Font*)calloc(1, sizeof(nk_headless_Font));
-    headless_font->width = 8; /* Default in  the SDL_gfx library */
-    headless_font->height = 8; /* Default in  the SDL_gfx library */
+    headless_font->width = max_char_width;
+    headless_font->height = font_height;
     if (!headless_font)
         return NULL;
 
@@ -365,7 +542,9 @@ nk_headless_init(Headless_Surface *screen_surface)
     font.height = (float)headless_font->height;
     font.width = nk_headless_get_text_width;
 
-    headless.screen_surface = screen_surface;
+    screen_surface.w = w;
+    screen_surface.h = h;
+    headless.screen_surface = &screen_surface;
     nk_init_default(&headless.ctx, &font);
     headless.ctx.clip.copy = nk_headless_clipbard_copy;
     headless.ctx.clip.paste = nk_headless_clipbard_paste;
@@ -461,5 +640,18 @@ nk_headless_shutdown(void)
 {
     free(headless_font);
     nk_free(&headless.ctx);
+}
+
+NK_API nk_flags
+nk_edit_string2(struct nk_context* ctx, nk_flags flags, int *buffer, int *len, int max) {
+	char* cbuffer = malloc(max);
+	for (int i = 0; i < max; i++) {
+		cbuffer[i] = buffer[i];
+	}
+	nk_edit_string(ctx, flags, cbuffer, len, max, 0);
+	for (int i = 0; i < max; i++) {
+		buffer[i] = cbuffer[i];
+	}
+	free(cbuffer);
 }
 

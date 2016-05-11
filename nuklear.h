@@ -258,10 +258,9 @@ typedef unsigned long nk_ptr;
 #else
 typedef NK_POINTER_TYPE nk_ptr;
 #endif
-typedef NK_UINT32 nk_hash;
+typedef unsigned int nk_hash;
 typedef unsigned int nk_flags;
 typedef nk_uint nk_rune;
-typedef unsigned char nk_byte;
 #endif
 
 #ifdef NK_PRIVATE
