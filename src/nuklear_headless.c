@@ -1,17 +1,14 @@
 #include <string.h>
+#include <stdio.h>
 
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
 #include "nuklear_headless.h"
 
 #define NK_IMPLEMENTATION
+#include "nuklear.h"
 
-#ifndef NK_MIN
-#define NK_MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-#ifndef NK_MAX
-#define NK_MAX(a,b) ((a) < (b) ? (b) : (a))
-#endif
-#ifndef NK_CLAMP
-#define NK_CLAMP(i,v,x) (NK_MAX(NK_MIN(v,x), i))
+#ifndef MAX
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
 #endif
 
 #define nk_headless_MAX_POINTS 128
