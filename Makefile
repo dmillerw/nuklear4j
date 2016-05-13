@@ -26,6 +26,7 @@ all: $(BIN)
 	$(CC) $(CFLAGS) -o $@ -c $< 
 
 $(GENERATED_DIR)/nuklear_wrap.c: nuklear.i
+	mkdir -p $(GENERATED_DIR) $(BUILD_DIR)
 	swig3.0 -java -outdir $(GENERATED_DIR) -o $@ $<
 
 $(BIN):$(OBJS)
@@ -35,4 +36,4 @@ $(BUILD_DIR)/NuklearDemo.class: $(BIN)
 	javac -d $(BUILD_DIR) $(SRC_DIR)/*.java $(GENERATED_DIR)/*.java
 
 clean:
-	 rm -f $(BIN) $(OBJS) $(GENERATED_DIR)/*
+	 rm -rf $(BIN) $(OBJS) $(GENERATED_DIR) $(BUILD_DIR)

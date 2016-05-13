@@ -1,7 +1,7 @@
 #ifndef NK_SDL_H_
 #define NK_SDL_H_
 
-#include "../../../nuklear.h"
+#include "nuklear.h"
 
 struct nk_headless_Font {
     int width;
