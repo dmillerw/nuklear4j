@@ -33,7 +33,7 @@ make test
 ```
 
 ## Gallery
-![screenshot](https://framapic.org/1dHHxxscCeFS/LWSPHK4kuD69.png)
+![screenshot](https://raw.githubusercontent.com/glegris/nuklear4j/resources/nuklear4j%20-%2013052016.png)
 
 ##CREDITS:
 Nuklear is developed by Micha Mettke and every direct or indirect contributor to the GitHub.
