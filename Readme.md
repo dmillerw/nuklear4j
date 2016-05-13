@@ -18,7 +18,7 @@ render backends it only focuses on the actual UI.
 - Fully skinnable and customizable
 - The Java graphics backend uses AWT currently
 
-## Building
+## Building 
 
 ```
 apt-get install swig3.0 
