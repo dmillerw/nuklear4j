@@ -22,6 +22,7 @@ render backends it only focuses on the actual UI.
 
 ```
 apt-get install swig3.0 
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 make
 ```
 
@@ -34,6 +35,7 @@ make
 
 ##CREDITS:
 Nuklear is developed by Micha Mettke and every direct or indirect contributor to the GitHub.
+Nuklear4j is developed by Guillaume Legris
 
 ##LICENSE:
 This software is under the MIT license.

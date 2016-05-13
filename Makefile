@@ -1,11 +1,16 @@
+
 # Install
 BUILD_DIR = build
 BIN = $(BUILD_DIR)/libnuklear-java
 SRC_DIR = src
 GENERATED_DIR = generated
 
+ifndef JAVA_HOME
+$(error JAVA_HOME is not set)
+endif
+
 # Flags
-CFLAGS = -std=c99 -pedantic -fPIC -O0 -I/usr/lib/jvm/java-7-openjdk-amd64/include -I/usr/lib/jvm/java-7-openjdk-amd64/include/linux -I$(SRC_DIR)
+CFLAGS = -std=c99 -pedantic -fPIC -O0 -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -I$(SRC_DIR)
 LDFLAGS = -shared
 
 SRC = $(SRC_DIR)/library.c $(GENERATED_DIR)/nuklear_wrap.c 
@@ -18,6 +23,8 @@ else
 BIN := $(BIN).so
 LIBS = -lm
 endif
+
+.PHONY: all clean
 
 #all: $(BUILD_DIR)/NuklearDemo.class
 all: $(BIN)
