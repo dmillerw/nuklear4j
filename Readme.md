@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/vurtun/nuklear.png)](https://travis-ci.org/vurtun/nuklear)
 # Nuklear4j
 
-Nuklear4j uses SWIG3 to generate the Java bindings. Even if this project focus on Java, it means bindings for other languages should be done easily (any volunteers ?)
+Nuklear4j uses SWIG3 to generate the Java bindings. Even if this project focus on Java, it means bindings for other languages (Python, Lua, C#, ...) could be done easily.
 
 ##Original description
 This is a minimal state immediate mode graphical user interface toolkit
@@ -24,6 +24,12 @@ render backends it only focuses on the actual UI.
 apt-get install swig3.0 
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 make
+```
+
+## Test
+
+```
+make test
 ```
 
 ## Gallery
