@@ -17,7 +17,6 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import nuklear.demo.NuklearDemo;
 import nuklear.swig.nk_buttons;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
@@ -51,7 +50,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 		this.screenHeight = screenHeight;
 
 		screenImage = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB_PRE);
-		font = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+		font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
 
 		final Dimension dimension = new Dimension(screenWidth, screenHeight);
@@ -197,7 +196,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 		int size = commandList.size();
 
 		Graphics g = screenImage.getGraphics();
-		g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+		g.setFont(font);
 
 		for (int i = 0; i < size; i++) {
 			Command command = (Command) commandList.get(i);
