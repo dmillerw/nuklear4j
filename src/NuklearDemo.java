@@ -15,6 +15,18 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import nuklear.swig.nk_button_behavior;
+import nuklear.swig.nk_buttons;
+import nuklear.swig.nk_command_type;
+import nuklear.swig.nk_context;
+import nuklear.swig.nk_edit_types;
+import nuklear.swig.nk_keys;
+import nuklear.swig.nk_panel;
+import nuklear.swig.nk_panel_flags;
+import nuklear.swig.nk_rect;
+import nuklear.swig.nuklear;
+import nuklear.swig.nuklearConstants;
+
 public class NuklearDemo {
 
 	public static int NK_TRUE;

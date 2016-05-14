@@ -3,7 +3,8 @@
 BUILD_DIR = build
 BIN = $(BUILD_DIR)/libnuklear-java
 SRC_DIR = src
-GENERATED_DIR = generated
+GENERATED_DIR_BASE = generated
+GENERATED_DIR = $(GENERATED_DIR_BASE)/nuklear/swig
 TEST_NAME = NuklearDemo
 TEST_CLASS_BIN = $(BUILD_DIR)/$(TEST_NAME).class
 
@@ -36,7 +37,7 @@ all: $(TEST_CLASS_BIN)
 
 $(GENERATED_DIR)/nuklear_wrap.c: nuklear.i
 	mkdir -p $(GENERATED_DIR) $(BUILD_DIR)
-	swig3.0 -java -outdir $(GENERATED_DIR) -o $@ $<
+	swig3.0 -java -package nuklear.swig -outdir $(GENERATED_DIR) -o $@ $<
 
 $(BIN):$(OBJS)
 	$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(LIBS)
@@ -48,4 +49,4 @@ test:
 	$(JAVA_HOME)/bin/java -Djava.library.path=build -cp build $(TEST_NAME)
 
 clean:
-	 rm -rf $(BIN) $(OBJS) $(GENERATED_DIR) $(BUILD_DIR)
+	 rm -rf $(BIN) $(OBJS) $(GENERATED_DIR_BASE) $(BUILD_DIR)
