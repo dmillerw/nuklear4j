@@ -6,7 +6,7 @@ SRC_DIR = src
 GENERATED_DIR_BASE = generated
 GENERATED_DIR = $(GENERATED_DIR_BASE)/nuklear/swig
 TEST_NAME = NuklearDemo
-TEST_CLASS_BIN = $(BUILD_DIR)/$(TEST_NAME).class
+TEST_CLASS_BIN = $(BUILD_DIR)/nuklear/demo/$(TEST_NAME).class
 
 ifndef JAVA_HOME
 $(error JAVA_HOME is not set)
@@ -43,10 +43,10 @@ $(BIN):$(OBJS)
 	$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(LIBS)
 
 $(TEST_CLASS_BIN): $(BIN)
-	$(JAVA_HOME)/bin/javac -source 1.3 -target 1.1 -d $(BUILD_DIR) $(SRC_DIR)/*.java $(GENERATED_DIR)/*.java
+	$(JAVA_HOME)/bin/javac -source 1.3 -target 1.1 -d $(BUILD_DIR) $(SRC_DIR)/nuklear/*.java $(SRC_DIR)/nuklear/demo/*.java $(GENERATED_DIR)/*.java
 
 test:
-	$(JAVA_HOME)/bin/java -Djava.library.path=build -cp build $(TEST_NAME)
+	$(JAVA_HOME)/bin/java -Djava.library.path=build -cp build nuklear.demo.$(TEST_NAME)
 
 clean:
 	 rm -rf $(BIN) $(OBJS) $(GENERATED_DIR_BASE) $(BUILD_DIR)
