@@ -1,6 +1,7 @@
  %module nuklear
  
  %{
+typedef enum { false, true } bool;
 //#define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #include "nuklear_headless.h"
@@ -198,7 +199,7 @@ NK_API void nk_input_char(struct nk_context*, char c);
 NK_API void nk_input_end(struct nk_context*);
 
 /* window */
-NK_API int nk_begin(struct nk_context *ctx, struct nk_panel *layout, const char *title, struct nk_rect bounds, nk_flags flags);
+NK_API bool nk_begin(struct nk_context *ctx, struct nk_panel *layout, const char *title, struct nk_rect bounds, nk_flags flags);
 NK_API void nk_end(struct nk_context*);
  
  /* Layout */
@@ -206,14 +207,14 @@ NK_API void nk_layout_row_dynamic(struct nk_context*, float height, int cols);
 NK_API void nk_layout_row_static(struct nk_context*, float height, int item_width, int cols);
 
 /* Widgets: Buttons */
-NK_API int nk_button_text(struct nk_context *ctx, const char *title, int len, enum nk_button_behavior);
-NK_API int nk_button_label(struct nk_context *ctx, const char *title, enum nk_button_behavior);
+NK_API bool nk_button_text(struct nk_context *ctx, const char *title, int len, enum nk_button_behavior);
+NK_API bool nk_button_label(struct nk_context *ctx, const char *title, enum nk_button_behavior);
 
 /* Widgets: Radio */
-NK_API int nk_radio_label(struct nk_context*, const char*, int *active);
-NK_API int nk_radio_text(struct nk_context*, const char*, int, int *active);
-NK_API int nk_option_label(struct nk_context*, const char*, int active);
-NK_API int nk_option_text(struct nk_context*, const char*, int, int active);
+NK_API bool nk_radio_label(struct nk_context*, const char*, int *active);
+NK_API bool nk_radio_text(struct nk_context*, const char*, int, int *active);
+NK_API bool nk_option_label(struct nk_context*, const char*, bool active);
+NK_API bool nk_option_text(struct nk_context*, const char*, int, bool active);
 
 enum nk_command_type {
     NK_COMMAND_NOP,
