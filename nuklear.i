@@ -252,6 +252,6 @@ NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, int *buffer, int *
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_filter);
  
 extern int initialize(int w, int h);
-NK_API struct nk_context* nk_headless_init(int w, int h, int max_char_width, int font_height);
-NK_API void nk_headless_render(int* draw_buffer);
+NK_API void nk_headless_init(struct nk_context* ctx, int w, int h, int max_char_width, int font_height);
+NK_API void nk_headless_render(struct nk_context* ctx, int* draw_buffer);
  

@@ -13,6 +13,7 @@
 
 #define nk_headless_MAX_POINTS 128
 
+/*
 struct nk_headless_Surface {
 	long handle;
 	int w;
@@ -27,6 +28,7 @@ static struct nk_headless {
     Headless_Surface *screen_surface;
     struct nk_context ctx;
 } headless;
+*/
 
 static nk_headless_Font *headless_font;
 /* static SDL_Rect sdl_clip_rect; */
@@ -402,26 +404,18 @@ nk_headless_clear(struct nk_color col)
 	//nk_headless_fill_rect(surface, 0, 0, surface->w, surface->h, 0, col);
 }
 
-static void
-nk_headless_blit(Headless_Surface *surface)
-{
-    /*
-	SDL_UpdateRect(surface, 0, 0, 0, 0);
-	*/
-}
-
 NK_API int*
-nk_headless_render(int *draw_buffer)
+nk_headless_render(struct nk_context* ctx, int *draw_buffer)
 {
     const struct nk_command *cmd;
 
     command_count = 0;
     buffer_index = BUFFER_INDEX_CMD_START;
 
-    Headless_Surface *screen_surface = headless.screen_surface;
+//    Headless_Surface *screen_surface = headless.screen_surface;
 //    nk_headless_clear(screen_surface, clear);
 
-    nk_foreach(cmd, &headless.ctx)
+    nk_foreach(cmd, ctx)
     {
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
@@ -506,7 +500,7 @@ nk_headless_render(int *draw_buffer)
     }
 
     //nk_headless_blit(headless.screen_surface);
-    nk_clear(&headless.ctx);
+    nk_clear(ctx);
 
     draw_buffer[BUFFER_INDEX_CMD_COUNT] = command_count;
     return draw_buffer;
@@ -531,28 +525,27 @@ nk_headless_get_text_width(nk_handle handle, float height, const char *text, int
     return len * headless_font->width;
 }
 
-NK_API struct nk_context*
-nk_headless_init(int w, int h, int max_char_width, int font_height)
+NK_API void
+nk_headless_init(struct nk_context* ctx, int w, int h, int max_char_width, int font_height)
 {
     struct nk_user_font font;
     headless_font = (nk_headless_Font*)calloc(1, sizeof(nk_headless_Font));
     headless_font->width = max_char_width;
     headless_font->height = font_height;
     if (!headless_font)
-        return NULL;
+        printf("Can't allocate memory for font\n");
 
     font.userdata = nk_handle_ptr(headless_font);
     font.height = (float)headless_font->height;
     font.width = nk_headless_get_text_width;
 
-    screen_surface.w = w;
-    screen_surface.h = h;
-    headless.screen_surface = &screen_surface;
-    nk_init_default(&headless.ctx, &font);
-    headless.ctx.clip.copy = nk_headless_clipbard_copy;
-    headless.ctx.clip.paste = nk_headless_clipbard_paste;
-    headless.ctx.clip.userdata = nk_handle_ptr(0);
-    return &headless.ctx;
+//    screen_surface.w = w;
+//    screen_surface.h = h;
+//    headless.screen_surface = &screen_surface;
+    nk_init_default(ctx, &font);
+    ctx->clip.copy = nk_headless_clipbard_copy;
+    ctx->clip.paste = nk_headless_clipbard_paste;
+    ctx->clip.userdata = nk_handle_ptr(0);
 }
 
 NK_API int
@@ -642,7 +635,7 @@ NK_API void
 nk_headless_shutdown(void)
 {
     free(headless_font);
-    nk_free(&headless.ctx);
+//    nk_free(&headless.ctx);
 }
 
 NK_API nk_flags

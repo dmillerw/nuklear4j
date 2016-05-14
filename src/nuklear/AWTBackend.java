@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 
 import nuklear.demo.NuklearDemo;
 import nuklear.swig.nk_buttons;
+import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
 import nuklear.swig.nk_keys;
 import nuklear.swig.nuklear;
@@ -90,10 +91,11 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 
 	}
 
-	public void clear() {
-
-		screenImage.getGraphics().setColor(Color.GRAY);
-		screenImage.getGraphics().fillRect(0, 0, screenWidth, screenHeight);
+	public void clear(nk_color bgColor) {
+		Color c = new Color(bgColor.getR(), bgColor.getG(), bgColor.getB());
+		Graphics g = screenImage.getGraphics();
+		g.setColor(c);
+		g.fillRect(0, 0, screenWidth, screenHeight);
 	}
 
 	public void handleEvent(nk_context ctx) {
@@ -112,47 +114,47 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 						nuklear.nk_input_motion(ctx, me.getX(), me.getY());
 					} else if (me.getID() == MouseEvent.MOUSE_PRESSED) {
 						// System.out.println("MOUSE_PRESSED");
-						// int NuklearDemo.NK_TRUE = (me.getID() ==
-						// MouseEvent.MOUSE_PRESSED) ? NuklearDemo.NK_TRUE :
-						// NuklearDemo.NK_FALSE;
+						// int Nuklear.NK_TRUE = (me.getID() ==
+						// MouseEvent.MOUSE_PRESSED) ? Nuklear.NK_TRUE :
+						// Nuklear.NK_FALSE;
 						int modifiers = me.getModifiersEx();
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_PRESSED: BUTTON1");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									NuklearDemo.NK_TRUE);
+									Nuklear4j.NK_TRUE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_PRESSED: BUTTON3");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									NuklearDemo.NK_TRUE);
+									Nuklear4j.NK_TRUE);
 						}
 					} else if (me.getID() == MouseEvent.MOUSE_RELEASED) {
-						// int NuklearDemo.NK_TRUE = (me.getID() ==
-						// MouseEvent.MOUSE_PRESSED) ? NuklearDemo.NK_TRUE :
-						// NuklearDemo.NK_FALSE;
+						// int Nuklear.NK_TRUE = (me.getID() ==
+						// MouseEvent.MOUSE_PRESSED) ? Nuklear.NK_TRUE :
+						// Nuklear.NK_FALSE;
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_RELEASED: BUTTON1");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									NuklearDemo.NK_FALSE);
+									Nuklear4j.NK_FALSE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_RELEASED: BUTTON3");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									NuklearDemo.NK_FALSE);
+									Nuklear4j.NK_FALSE);
 						}
 					} else if (me.getID() == MouseEvent.MOUSE_DRAGGED) {
-						// int NuklearDemo.NK_TRUE = (me.getID() ==
-						// MouseEvent.MOUSE_PRESSED) ? NuklearDemo.NK_TRUE :
-						// NuklearDemo.NK_FALSE;
+						// int Nuklear.NK_TRUE = (me.getID() ==
+						// MouseEvent.MOUSE_PRESSED) ? Nuklear.NK_TRUE :
+						// Nuklear.NK_FALSE;
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_RELEASED: BUTTON1");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									NuklearDemo.NK_TRUE);
+									Nuklear4j.NK_TRUE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_RELEASED: BUTTON3");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									NuklearDemo.NK_TRUE);
+									Nuklear4j.NK_TRUE);
 						}
 						nuklear.nk_input_motion(ctx, me.getX(), me.getY());
 					}
@@ -167,7 +169,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 					boolean pressed = (e.getID() == KeyEvent.KEY_PRESSED);
 					if (keyCode == KeyEvent.VK_BACK_SPACE) {
 						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_BACKSPACE,
-								pressed ? NuklearDemo.NK_TRUE : NuklearDemo.NK_FALSE);
+								pressed ? Nuklear4j.NK_TRUE : Nuklear4j.NK_FALSE);
 					} else {
 						if (!pressed) {
 							if (c != KeyEvent.CHAR_UNDEFINED) {
@@ -184,13 +186,14 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 		// nk_input_motion(ctx, evt->motion.x, evt->motion.y);
 	}
 	
-	public void render() {
-		nuklear.nk_headless_render(intBuffer);
+	public void render(nk_context ctx) {
+		nuklear.nk_headless_render(ctx, intBuffer);
 		Command.build(intBuffer, commandList);
 		render(commandList);
+		commandList.clear();
 	}
 
-	public void render(Vector commandList) {
+	private void render(Vector commandList) {
 		int size = commandList.size();
 
 		Graphics g = screenImage.getGraphics();
@@ -208,7 +211,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 			} else if (command.getType() == Command.NK_COMMAND_RECT) {
 				RectCommand rc = (RectCommand) command;
 				g.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
-				if (rc.rounded == NuklearDemo.NK_FALSE) {
+				if (rc.rounded == Nuklear4j.NK_FALSE) {
 					g.drawRect(rc.x, rc.y, rc.w, rc.h);
 				} else {
 					g.drawRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
@@ -216,7 +219,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 			} else if (command.getType() == Command.NK_COMMAND_RECT_FILLED) {
 				RectFilledCommand rc = (RectFilledCommand) command;
 				g.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
-				if (rc.rounded == NuklearDemo.NK_FALSE) {
+				if (rc.rounded == Nuklear4j.NK_FALSE) {
 					g.fillRect(rc.x, rc.y, rc.w, rc.h);
 				} else {
 					g.fillRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
@@ -336,4 +339,27 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 	public void keyTyped(KeyEvent e) {
 
 	}
+
+	public boolean waitEvents(long delay) {
+		synchronized (eventQueue) {
+			if (eventQueue.size() > 0) {
+				return true;
+			}
+		}
+		
+		try {
+			Thread.sleep(delay);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return false;
+		
+	}
+
+	public Vector getEventQueue() {
+		return eventQueue;
+	}
+	
+	
+	
 }

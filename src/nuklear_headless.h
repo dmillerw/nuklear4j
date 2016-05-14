@@ -11,7 +11,7 @@ struct nk_headless_Font {
 
 typedef struct nk_headless_Font nk_headless_Font;
 
-NK_API struct nk_context *nk_headless_init(int w, int h, int max_char_width, int font_height);
+NK_API void nk_headless_init(struct nk_context *ctx, int w, int h, int max_char_width, int font_height);
 /* NK_API void nk_sdl_handle_event(SDL_Event *evt);*/
 NK_API void nk_headless_clear(struct nk_color clear);
 NK_API int* nk_headless_render();
