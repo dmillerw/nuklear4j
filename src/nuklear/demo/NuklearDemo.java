@@ -10,6 +10,7 @@ import nuklear.swig.nk_layout_format;
 import nuklear.swig.nk_modify;
 import nuklear.swig.nk_panel;
 import nuklear.swig.nk_panel_flags;
+import nuklear.swig.nk_popup_type;
 import nuklear.swig.nk_rect;
 import nuklear.swig.nk_style_header_align;
 import nuklear.swig.nk_text_alignment;
@@ -96,8 +97,7 @@ public class NuklearDemo {
 						nuklear.nk_menubar_begin(ctx);
 						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_STATIC, 25, 2);
 						nuklear.nk_layout_row_push(ctx, 45);
-						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT.swigValue(),
-								120)) {
+						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT.swigValue(), 120)) {
 
 							nuklear.nk_layout_row_dynamic(ctx, 25, 1);
 							if (nuklear.nk_menu_item_label(ctx, "Hide", nk_text_alignment.NK_TEXT_LEFT.swigValue()))
@@ -115,13 +115,32 @@ public class NuklearDemo {
 						nuklear.nk_checkbox_label(ctx, "check", mcheck);
 						nuklear.nk_menubar_end(ctx);
 					}
+
+					if (show_app_about) {
+						/* about popup */
+						nk_panel popup = new nk_panel();
+						nk_rect s = new nk_rect();
+						s.setX(20);
+						s.setY(100);
+						s.setW(300);
+						s.setH(190);
+						if (nuklear.nk_popup_begin(ctx, popup, nk_popup_type.NK_POPUP_STATIC, "About", nk_panel_flags.NK_WINDOW_CLOSABLE.swigValue(), s)) {
+							nuklear.nk_layout_row_dynamic(ctx, 20, 1);
+							nuklear.nk_label(ctx, "Nuklear", nk_text_alignment.NK_TEXT_LEFT.swigValue());
+							nuklear.nk_label(ctx, "By Micha Mettke", nk_text_alignment.NK_TEXT_LEFT.swigValue());
+							nuklear.nk_label(ctx, "nuklear is licensed under the public domain License.", nk_text_alignment.NK_TEXT_LEFT.swigValue());
+							nuklear.nk_popup_end(ctx);
+						} else
+							show_app_about = false;
+					}
+
 				} // if (nuklear.nk_begin)
 				nuklear.nk_end(ctx);
-				
+
 				backend.clear(bgColor);
 				backend.render(ctx);
 			}
-			
+
 		} // while
 
 	}
@@ -225,9 +244,8 @@ public class NuklearDemo {
 		bounds.setY(50);
 		bounds.setW(210);
 		bounds.setH(250);
-		long flags = nk_panel_flags.NK_WINDOW_BORDER.swigValue() | nk_panel_flags.NK_WINDOW_MOVABLE.swigValue()
-				| nk_panel_flags.NK_WINDOW_SCALABLE.swigValue() | nk_panel_flags.NK_WINDOW_MINIMIZABLE.swigValue()
-				| nk_panel_flags.NK_WINDOW_TITLE.swigValue();
+		long flags = nk_panel_flags.NK_WINDOW_BORDER.swigValue() | nk_panel_flags.NK_WINDOW_MOVABLE.swigValue() | nk_panel_flags.NK_WINDOW_SCALABLE.swigValue()
+				| nk_panel_flags.NK_WINDOW_MINIMIZABLE.swigValue() | nk_panel_flags.NK_WINDOW_TITLE.swigValue();
 
 		while (true) {
 
@@ -262,7 +280,7 @@ public class NuklearDemo {
 	public static void main(String argv[]) {
 		NuklearDemo demo = new NuklearDemo();
 		demo.initialize();
-		//demo.simple();
+		// demo.simple();
 		demo.overview();
 	}
 

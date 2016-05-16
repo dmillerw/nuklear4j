@@ -241,7 +241,7 @@ NK_API void nk_input_end(struct nk_context*);
 NK_API bool nk_begin(struct nk_context *ctx, struct nk_panel *layout, const char *title, struct nk_rect bounds, nk_flags flags);
 NK_API void nk_end(struct nk_context*);
  
- /* Layout */
+/* Layout */
 NK_API void nk_layout_row_dynamic(struct nk_context*, float height, int cols);
 NK_API void nk_layout_row_static(struct nk_context*, float height, int item_width, int cols);
 NK_API void nk_layout_row_begin(struct nk_context*, enum nk_layout_format, float row_height, int cols);
@@ -258,6 +258,17 @@ NK_API struct nk_vec2 nk_layout_space_to_screen(struct nk_context*, struct nk_ve
 NK_API struct nk_vec2 nk_layout_space_to_local(struct nk_context*, struct nk_vec2);
 NK_API struct nk_rect nk_layout_space_rect_to_screen(struct nk_context*, struct nk_rect);
 NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct nk_rect);
+
+/* Label */
+NK_API void nk_label(struct nk_context*, const char*, nk_flags);
+NK_API void nk_label_colored(struct nk_context*, const char*, nk_flags align, struct nk_color);
+NK_API void nk_label_wrap(struct nk_context*, const char*);
+NK_API void nk_label_colored_wrap(struct nk_context*, const char*, struct nk_color);
+
+/* Popups */
+NK_API bool nk_popup_begin(struct nk_context*, struct nk_panel*, enum nk_popup_type, const char*, nk_flags, struct nk_rect bounds);
+NK_API void nk_popup_close(struct nk_context*);
+NK_API void nk_popup_end(struct nk_context*);
 
 /* Widgets: Buttons */
 NK_API bool nk_button_text(struct nk_context *ctx, const char *title, int len, enum nk_button_behavior);
