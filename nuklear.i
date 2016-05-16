@@ -71,6 +71,23 @@ enum nk_layout_format   {NK_DYNAMIC,NK_STATIC};
 enum nk_tree_type       {NK_TREE_NODE,NK_TREE_TAB};
 enum nk_anti_aliasing   {NK_ANTI_ALIASING_OFF,NK_ANTI_ALIASING_ON};
 
+enum nk_symbol_type {
+    NK_SYMBOL_NONE,
+    NK_SYMBOL_X,
+    NK_SYMBOL_UNDERSCORE,
+    NK_SYMBOL_CIRCLE,
+    NK_SYMBOL_CIRCLE_FILLED,
+    NK_SYMBOL_RECT,
+    NK_SYMBOL_RECT_FILLED,
+    NK_SYMBOL_TRIANGLE_UP,
+    NK_SYMBOL_TRIANGLE_DOWN,
+    NK_SYMBOL_TRIANGLE_LEFT,
+    NK_SYMBOL_TRIANGLE_RIGHT,
+    NK_SYMBOL_PLUS,
+    NK_SYMBOL_MINUS,
+    NK_SYMBOL_MAX
+};
+
 enum nk_keys {
     NK_KEY_NONE,
     NK_KEY_SHIFT,
@@ -115,6 +132,21 @@ enum nk_panel_flags {
     NK_WINDOW_DYNAMIC       = NK_FLAG(6), /* special window type growing up in height while being filled to a * certain maximum height */
     NK_WINDOW_NO_SCROLLBAR  = NK_FLAG(7), /* Removes the scrollbar from the window */
     NK_WINDOW_TITLE         = NK_FLAG(8) /* Forces a header at the top at the window showing the title */
+};
+
+/* text alignment */
+enum nk_text_align {
+    NK_TEXT_ALIGN_LEFT        = 0x01,
+    NK_TEXT_ALIGN_CENTERED    = 0x02,
+    NK_TEXT_ALIGN_RIGHT       = 0x04,
+    NK_TEXT_ALIGN_TOP         = 0x08,
+    NK_TEXT_ALIGN_MIDDLE      = 0x10,
+    NK_TEXT_ALIGN_BOTTOM      = 0x20
+};
+enum nk_text_alignment {
+    NK_TEXT_LEFT        = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_LEFT,
+    NK_TEXT_CENTERED    = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_CENTERED,
+    NK_TEXT_RIGHT       = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_RIGHT
 };
 
 enum nk_edit_flags {
@@ -185,9 +217,16 @@ struct nk_context {
     nk_flags last_widget_state;
 };
 
+enum nk_style_header_align {
+    NK_HEADER_LEFT,
+    NK_HEADER_RIGHT
+};
+
 struct nk_panel {
     nk_flags flags;
 };
+
+
 
 /* User Input */
 NK_API void nk_input_begin(struct nk_context*);
@@ -205,6 +244,20 @@ NK_API void nk_end(struct nk_context*);
  /* Layout */
 NK_API void nk_layout_row_dynamic(struct nk_context*, float height, int cols);
 NK_API void nk_layout_row_static(struct nk_context*, float height, int item_width, int cols);
+NK_API void nk_layout_row_begin(struct nk_context*, enum nk_layout_format, float row_height, int cols);
+NK_API void nk_layout_row_push(struct nk_context*, float value);
+NK_API void nk_layout_row_end(struct nk_context*);
+NK_API void nk_layout_row(struct nk_context*, enum nk_layout_format, float height, int cols, const float *ratio);
+
+NK_API void nk_layout_space_begin(struct nk_context*, enum nk_layout_format, float height, int widget_count);
+NK_API void nk_layout_space_push(struct nk_context*, struct nk_rect);
+NK_API void nk_layout_space_end(struct nk_context*);
+
+NK_API struct nk_rect nk_layout_space_bounds(struct nk_context*);
+NK_API struct nk_vec2 nk_layout_space_to_screen(struct nk_context*, struct nk_vec2);
+NK_API struct nk_vec2 nk_layout_space_to_local(struct nk_context*, struct nk_vec2);
+NK_API struct nk_rect nk_layout_space_rect_to_screen(struct nk_context*, struct nk_rect);
+NK_API struct nk_rect nk_layout_space_rect_to_local(struct nk_context*, struct nk_rect);
 
 /* Widgets: Buttons */
 NK_API bool nk_button_text(struct nk_context *ctx, const char *title, int len, enum nk_button_behavior);
@@ -215,6 +268,26 @@ NK_API bool nk_radio_label(struct nk_context*, const char*, int *active);
 NK_API bool nk_radio_text(struct nk_context*, const char*, int, int *active);
 NK_API bool nk_option_label(struct nk_context*, const char*, bool active);
 NK_API bool nk_option_text(struct nk_context*, const char*, int, bool active);
+
+/* Menu */
+NK_API void nk_menubar_begin(struct nk_context*);
+NK_API void nk_menubar_end(struct nk_context*);
+NK_API bool nk_menu_begin_text(struct nk_context*, struct nk_panel*, const char*, int, nk_flags align, float width);
+NK_API bool nk_menu_begin_label(struct nk_context*, struct nk_panel*, const char*, nk_flags align, float width);
+NK_API bool nk_menu_begin_image(struct nk_context*, struct nk_panel*, const char*, struct nk_image, float width);
+NK_API bool nk_menu_begin_image_text(struct nk_context*, struct nk_panel*, const char*, int,nk_flags align,struct nk_image, float width);
+NK_API bool nk_menu_begin_image_label(struct nk_context*, struct nk_panel*, const char*, nk_flags align,struct nk_image, float width);
+NK_API bool nk_menu_begin_symbol(struct nk_context*, struct nk_panel*, const char*, enum nk_symbol_type, float width);
+NK_API bool nk_menu_begin_symbol_text(struct nk_context*, struct nk_panel*, const char*, int,nk_flags align,enum nk_symbol_type, float width);
+NK_API bool nk_menu_begin_symbol_label(struct nk_context*, struct nk_panel*, const char*, nk_flags align,enum nk_symbol_type, float width);
+NK_API bool nk_menu_item_text(struct nk_context*, const char*, int,nk_flags align);
+NK_API bool nk_menu_item_label(struct nk_context*, const char*, nk_flags alignment);
+NK_API bool nk_menu_item_image_label(struct nk_context*, struct nk_image, const char*, nk_flags alignment);
+NK_API bool nk_menu_item_image_text(struct nk_context*, struct nk_image, const char*, int len, nk_flags alignment);
+NK_API bool nk_menu_item_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags alignment);
+NK_API bool nk_menu_item_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags alignment);
+NK_API void nk_menu_close(struct nk_context*);
+NK_API void nk_menu_end(struct nk_context*);
 
 enum nk_command_type {
     NK_COMMAND_NOP,
@@ -240,6 +313,7 @@ enum nk_command_type {
 %include "arrays_java.i"
 %apply int[] {int *};
 %apply float[] {float *};
+%apply long[] {unsigned long *};
 
 /* Widgets: Property */
 NK_API void nk_property_float(struct nk_context *layout, const char *name, float min, float *val, float max, float step, float inc_per_pixel);
@@ -247,10 +321,29 @@ NK_API void nk_property_int(struct nk_context *layout, const char *name, int min
 NK_API float nk_propertyf(struct nk_context *layout, const char *name, float min, float val, float max, float step, float inc_per_pixel);
 NK_API int nk_propertyi(struct nk_context *layout, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 
-
 /* Widgets: TextEdit */
 NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, int *buffer, int *len, int max);
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_filter);
+
+/* Widgets: Progressbar */
+NK_API int nk_progress(struct nk_context*, nk_size *cur, nk_size max, int modifyable);
+NK_API nk_size nk_prog(struct nk_context*, nk_size cur, nk_size max, int modifyable);
+
+/* Widgets: Slider */
+NK_API float nk_slide_float(struct nk_context*, float min, float val, float max, float step);
+NK_API int nk_slide_int(struct nk_context*, int min, int val, int max, int step);
+NK_API int nk_slider_float(struct nk_context*, float min, float *val, float max, float step);
+NK_API int nk_slider_int(struct nk_context*, int min, int *val, int max, int step);
+
+/* Widgets: Checkbox */
+NK_API int nk_check_label(struct nk_context*, const char*, int active);
+NK_API int nk_check_text(struct nk_context*, const char*, int,int active);
+NK_API unsigned nk_check_flags_label(struct nk_context*, const char*, unsigned int flags, unsigned int value);
+NK_API unsigned nk_check_flags_text(struct nk_context*, const char*, int, unsigned int flags, unsigned int value);
+NK_API int nk_checkbox_label(struct nk_context*, const char*, int *active);
+NK_API int nk_checkbox_text(struct nk_context*, const char*, int, int *active);
+NK_API int nk_checkbox_flags_label(struct nk_context*, const char*, unsigned int *flags, unsigned int value);
+NK_API int nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value);
  
 extern int initialize(int w, int h);
 NK_API void nk_headless_init(struct nk_context* ctx, int w, int h, int max_char_width, int font_height);

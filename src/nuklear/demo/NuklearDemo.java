@@ -6,9 +6,13 @@ import nuklear.swig.nk_button_behavior;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
 import nuklear.swig.nk_edit_types;
+import nuklear.swig.nk_layout_format;
+import nuklear.swig.nk_modify;
 import nuklear.swig.nk_panel;
 import nuklear.swig.nk_panel_flags;
 import nuklear.swig.nk_rect;
+import nuklear.swig.nk_style_header_align;
+import nuklear.swig.nk_text_alignment;
 import nuklear.swig.nuklear;
 
 public class NuklearDemo {
@@ -29,15 +33,97 @@ public class NuklearDemo {
 	}
 
 	public void overview() {
+
+		nk_color bgColor = new nk_color();
+		bgColor.setA((short) 255);
+		bgColor.setR((short) 190);
+		bgColor.setG((short) 190);
+		bgColor.setB((short) 190);
+
 		boolean show_menu = true;
 		boolean titlebar = true;
 		boolean border = true;
 		boolean resize = true;
 		boolean movable = true;
 		boolean no_scrollbar = true;
-		long window_flags = 0;
 		boolean minimizable = true;
 		boolean close = true;
+
+		nk_panel layout = new nk_panel();
+		nk_panel menu = new nk_panel();
+		/* popups */
+		nk_style_header_align header_align = nk_style_header_align.NK_HEADER_RIGHT;
+		boolean show_app_about = false;
+
+		long window_flags = 0;
+		if (border)
+			window_flags |= nk_panel_flags.NK_WINDOW_BORDER.swigValue();
+		if (resize)
+			window_flags |= nk_panel_flags.NK_WINDOW_SCALABLE.swigValue();
+		if (movable)
+			window_flags |= nk_panel_flags.NK_WINDOW_MOVABLE.swigValue();
+		if (no_scrollbar)
+			window_flags |= nk_panel_flags.NK_WINDOW_NO_SCROLLBAR.swigValue();
+		if (minimizable)
+			window_flags |= nk_panel_flags.NK_WINDOW_MINIMIZABLE.swigValue();
+		if (close)
+			window_flags |= nk_panel_flags.NK_WINDOW_CLOSABLE.swigValue();
+
+		nk_rect bounds = new nk_rect();
+		bounds.setX(10);
+		bounds.setY(10);
+		bounds.setW(400);
+		bounds.setH(750);
+
+		int MENU_DEFAULT = 0;
+		int MENU_WINDOWS = 1;
+		int[] mprog = { 60 };
+		int[] mslider = { 10 };
+		int[] mcheck = { Nuklear4j.NK_TRUE };
+
+		int[] prog = { 40 };
+		int[] slider = { 10 };
+		int[] check = { Nuklear4j.NK_TRUE };
+
+		while (true) {
+
+			if (backend.waitEvents(50)) {
+				backend.handleEvent(ctx);
+
+				if (nuklear.nk_begin(ctx, layout, "Overview", bounds, window_flags)) {
+					if (show_menu) {
+						/* menubar */
+						nuklear.nk_menubar_begin(ctx);
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_STATIC, 25, 2);
+						nuklear.nk_layout_row_push(ctx, 45);
+						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT.swigValue(),
+								120)) {
+
+							nuklear.nk_layout_row_dynamic(ctx, 25, 1);
+							if (nuklear.nk_menu_item_label(ctx, "Hide", nk_text_alignment.NK_TEXT_LEFT.swigValue()))
+								show_menu = false;
+							if (nuklear.nk_menu_item_label(ctx, "About", nk_text_alignment.NK_TEXT_LEFT.swigValue()))
+								show_app_about = true;
+							nuklear.nk_progress(ctx, prog, 100, nk_modify.NK_MODIFIABLE.swigValue());
+							nuklear.nk_slider_int(ctx, 0, slider, 16, 1);
+							nuklear.nk_checkbox_label(ctx, "check", check);
+							nuklear.nk_menu_end(ctx);
+						}
+						nuklear.nk_layout_row_push(ctx, 70);
+						nuklear.nk_progress(ctx, mprog, 100, nk_modify.NK_MODIFIABLE.swigValue());
+						nuklear.nk_slider_int(ctx, 0, mslider, 16, 1);
+						nuklear.nk_checkbox_label(ctx, "check", mcheck);
+						nuklear.nk_menubar_end(ctx);
+					}
+				} // if (nuklear.nk_begin)
+				nuklear.nk_end(ctx);
+				
+				backend.clear(bgColor);
+				backend.render(ctx);
+			}
+			
+		} // while
+
 	}
 
 	// public void calculator() {
@@ -176,7 +262,8 @@ public class NuklearDemo {
 	public static void main(String argv[]) {
 		NuklearDemo demo = new NuklearDemo();
 		demo.initialize();
-		demo.simple();
+		//demo.simple();
+		demo.overview();
 	}
 
 }
