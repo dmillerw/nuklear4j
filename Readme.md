@@ -1,7 +1,7 @@
 
 # Nuklear4j
 
-Nuklear4j uses SWIG3 to generate the Java bindings for the ![Nuklear library](https://github.com/vurtun/nuklear). Even if this project focus on Java, it means bindings for other languages (Python, Lua, C#, ...) could be done easily.
+Nuklear4j uses ![SWIG 3](www.swig.org) to generate the Java bindings for the ![Nuklear library](https://github.com/vurtun/nuklear). Even if this project focus on Java, it means bindings for other languages (Python, Lua, C#, ...) could be done easily.
 
 ##Original description
 This is a minimal state immediate mode graphical user interface toolkit
@@ -17,6 +17,7 @@ render backends it only focuses on the actual UI.
 - Immediate mode graphical user interface toolkit
 - Fully skinnable and customizable
 - The Java graphics backend uses AWT currently
+- Works with Java 1.1 or newer
 
 ## Building
 
