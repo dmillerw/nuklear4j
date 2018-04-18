@@ -386,10 +386,12 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 			}
 		}
 		
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		if (delay >= 0) {
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		return false;
 		
