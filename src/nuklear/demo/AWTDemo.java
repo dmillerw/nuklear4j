@@ -16,6 +16,12 @@ public class AWTDemo extends AbstractDemo {
 	//@Override
 	public Backend createBackend(int screenWidth, int screenHeight) {
 		AWTBackend backend = new AWTBackend();
+		
+		/*
+		 * Uncomment if you want to play with fonts (default: Font.MONOSPACED, Font.PLAIN, 10)
+		 */
+		//backend.setFont(new Font(Font.SERIF, Font.PLAIN, 12));
+		
 		backend.initialize(screenWidth, screenHeight);
 		
 		/* If you want to render in your own buffer: 

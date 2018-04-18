@@ -26,14 +26,14 @@ import nuklear.swig.nuklear;
 public class AWTBackend implements Backend, MouseMotionListener, MouseListener, KeyListener {
 
 	private Canvas canvas = new Canvas();
-	Font font; 
+	private Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 	private BufferedImage screenImage;
-	FontMetrics fontMetrics;
+	private FontMetrics fontMetrics;
 	private JPanel panel;
 	private JFrame frame;
 	private Vector eventQueue;
-	Vector commandList = new Vector();
-	int[] intBuffer = new int[10000];
+	private Vector commandList = new Vector();
+	private int[] intBuffer = new int[10000];
 
 	public int getFontHeight() {
 		return fontMetrics.getHeight();
@@ -54,13 +54,19 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 		this.screenImage = screenImage;
 	}
 	
+	public void setFont(Font font) {
+		if (screenImage != null) {
+			throw new IllegalStateException("Font can't be changed after initialization");
+		}
+		this.font = font;
+	}
+	
 	/**
 	 * Rendering will be done in the provided BufferedImage. Remember to add this class as the event listener.  
 	 * @param screenImage
 	 */
 	public void initialize(BufferedImage screenImage) {
 		this.screenImage = screenImage;
-		font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
 	}
 
@@ -71,9 +77,6 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 	 */
 	public void initialize(int screenWidth, int screenHeight) {
 		initialize(new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB_PRE));
-		
-		font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
-		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
 
 		final Dimension dimension = new Dimension(screenWidth, screenHeight);
 		panel = new JPanel() {

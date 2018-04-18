@@ -79,7 +79,7 @@ public abstract class AbstractDemo {
 		bounds.setX(10);
 		bounds.setY(10);
 		bounds.setW(400);
-		bounds.setH(750);
+		bounds.setH(400);
 
 		int MENU_DEFAULT = 0;
 		int MENU_WINDOWS = 1;
@@ -104,8 +104,8 @@ public abstract class AbstractDemo {
 					if (show_menu) {
 						/* menubar */
 						nuklear.nk_menubar_begin(ctx);
-						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_STATIC, 25, 2);
-						nuklear.nk_layout_row_push(ctx, 45);
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_STATIC, 25, 4);
+						nuklear.nk_layout_row_push(ctx, 70);
 						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT, 120)) {
 
 							nuklear.nk_layout_row_dynamic(ctx, 25, 1);
@@ -121,6 +121,7 @@ public abstract class AbstractDemo {
 						nuklear.nk_layout_row_push(ctx, 70);
 						nuklear.nk_progress(ctx, mprog, 100, nk_modify.NK_MODIFIABLE);
 						nuklear.nk_slider_int(ctx, 0, mslider, 16, 1);
+						nuklear.nk_layout_row_push(ctx, 90);
 						nuklear.nk_checkbox_label(ctx, "check", mcheck);
 						nuklear.nk_menubar_end(ctx);
 					}
