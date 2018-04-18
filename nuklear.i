@@ -11,6 +11,10 @@ extern int initialize(int w, int h);
 //%include "carrays.i"
 //%array_class(int, IntArray);
 
+//%include "enums.swg"
+%include "enumtypeunsafe.swg"
+%javaconst(1);
+
 #define NK_COMMAND_SCISSOR_SIZE 4
 #define NK_COMMAND_LINE_SIZE 9
 #define NK_COMMAND_CURVE_SIZE 1
@@ -46,7 +50,9 @@ typedef unsigned int nk_flags;
 typedef nk_uint nk_rune;
 typedef unsigned char nk_byte;
 
-enum {nk_false, nk_true};
+//enum {nk_false, nk_true};
+#define nk_false 0
+#define nk_true 1
 struct nk_color {nk_byte r,g,b,a;};
 struct nk_vec2 {float x,y;};
 struct nk_vec2i {short x, y;};
@@ -57,6 +63,7 @@ typedef union {void *ptr; int id;} nk_handle;
 struct nk_image {nk_handle handle;unsigned short w,h;unsigned short region[4];};
 struct nk_scroll {unsigned short x, y;};
 enum nk_heading {NK_UP, NK_RIGHT, NK_DOWN, NK_LEFT};
+
 
 enum nk_button_behavior {NK_BUTTON_DEFAULT,NK_BUTTON_REPEATER};
 enum nk_modify          {NK_FIXED=nk_false,NK_MODIFIABLE=nk_true};
@@ -143,11 +150,20 @@ enum nk_text_align {
     NK_TEXT_ALIGN_MIDDLE      = 0x10,
     NK_TEXT_ALIGN_BOTTOM      = 0x20
 };
+
+/*
 enum nk_text_alignment {
     NK_TEXT_LEFT        = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_LEFT,
     NK_TEXT_CENTERED    = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_CENTERED,
     NK_TEXT_RIGHT       = NK_TEXT_ALIGN_MIDDLE|NK_TEXT_ALIGN_RIGHT
 };
+*/
+
+/*
+#define NK_TEXT_LEFT		NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_LEFT
+#define K_TEXT_CENTERED		NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_CENTERED
+#define NK_TEXT_RIGHT		NK_TEXT_ALIGN_MIDDLE | NK_TEXT_ALIGN_RIGHT
+*/
 
 enum nk_edit_flags {
     NK_EDIT_DEFAULT                 = 0,
@@ -164,12 +180,20 @@ enum nk_edit_flags {
     NK_EDIT_MULTILINE               = NK_FLAG(11)
 };
 
+/*
 enum nk_edit_types {
     NK_EDIT_SIMPLE  = NK_EDIT_ALWAYS_INSERT_MODE,
     NK_EDIT_FIELD   = NK_EDIT_SIMPLE|NK_EDIT_SELECTABLE,
     NK_EDIT_BOX     = NK_EDIT_ALWAYS_INSERT_MODE| NK_EDIT_SELECTABLE|
                         NK_EDIT_MULTILINE|NK_EDIT_ALLOW_TAB
 };
+*/
+
+/*
+#define NK_EDIT_SIMPLE  NK_EDIT_ALWAYS_INSERT_MODE
+#define NK_EDIT_FIELD  NK_EDIT_SIMPLE | NK_EDIT_SELECTABLE
+#define NK_EDIT_BOX  NK_EDIT_ALWAYS_INSERT_MODE| NK_EDIT_SELECTABLE | NK_EDIT_MULTILINE | NK_EDIT_ALLOW_TAB
+*/
 
 enum nk_edit_events {
     NK_EDIT_ACTIVE      = NK_FLAG(0), /* edit widget is currently being modified */

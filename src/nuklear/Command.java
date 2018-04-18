@@ -11,15 +11,15 @@ abstract class Command {
 		return type;
 	}
 
-	public static final int NK_COMMAND_SCISSOR = nk_command_type.NK_COMMAND_SCISSOR.swigValue();
-	public static final int NK_COMMAND_LINE = nk_command_type.NK_COMMAND_LINE.swigValue();
-	public static final int NK_COMMAND_RECT = nk_command_type.NK_COMMAND_RECT.swigValue();
-	public static final int NK_COMMAND_RECT_FILLED = nk_command_type.NK_COMMAND_RECT_FILLED.swigValue();
-	public static final int NK_COMMAND_CIRCLE = nk_command_type.NK_COMMAND_CIRCLE.swigValue();
-	public static final int NK_COMMAND_CIRCLE_FILLED = nk_command_type.NK_COMMAND_CIRCLE_FILLED.swigValue();
-	public static final int NK_COMMAND_TRIANGLE = nk_command_type.NK_COMMAND_TRIANGLE.swigValue();
-	public static final int NK_COMMAND_TRIANGLE_FILLED = nk_command_type.NK_COMMAND_TRIANGLE_FILLED.swigValue();
-	public static final int NK_COMMAND_TEXT = nk_command_type.NK_COMMAND_TEXT.swigValue();
+	public static final int NK_COMMAND_SCISSOR = nk_command_type.NK_COMMAND_SCISSOR;
+	public static final int NK_COMMAND_LINE = nk_command_type.NK_COMMAND_LINE;
+	public static final int NK_COMMAND_RECT = nk_command_type.NK_COMMAND_RECT;
+	public static final int NK_COMMAND_RECT_FILLED = nk_command_type.NK_COMMAND_RECT_FILLED;
+	public static final int NK_COMMAND_CIRCLE = nk_command_type.NK_COMMAND_CIRCLE;
+	public static final int NK_COMMAND_CIRCLE_FILLED = nk_command_type.NK_COMMAND_CIRCLE_FILLED;
+	public static final int NK_COMMAND_TRIANGLE = nk_command_type.NK_COMMAND_TRIANGLE;
+	public static final int NK_COMMAND_TRIANGLE_FILLED = nk_command_type.NK_COMMAND_TRIANGLE_FILLED;
+	public static final int NK_COMMAND_TEXT = nk_command_type.NK_COMMAND_TEXT;
 	private int type;
 
 	public Command(int type) {

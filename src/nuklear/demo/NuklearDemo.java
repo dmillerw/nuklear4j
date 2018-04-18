@@ -5,7 +5,6 @@ import nuklear.Nuklear4j;
 import nuklear.swig.nk_button_behavior;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
-import nuklear.swig.nk_edit_types;
 import nuklear.swig.nk_layout_format;
 import nuklear.swig.nk_modify;
 import nuklear.swig.nk_panel;
@@ -14,6 +13,7 @@ import nuklear.swig.nk_popup_type;
 import nuklear.swig.nk_rect;
 import nuklear.swig.nk_style_header_align;
 import nuklear.swig.nk_text_alignment;
+import nuklear.swig.nk_edit_types;
 import nuklear.swig.nuklear;
 
 public class NuklearDemo {
@@ -53,22 +53,22 @@ public class NuklearDemo {
 		nk_panel layout = new nk_panel();
 		nk_panel menu = new nk_panel();
 		/* popups */
-		nk_style_header_align header_align = nk_style_header_align.NK_HEADER_RIGHT;
+		int header_align = nk_style_header_align.NK_HEADER_RIGHT;
 		boolean show_app_about = false;
 
 		long window_flags = 0;
 		if (border)
-			window_flags |= nk_panel_flags.NK_WINDOW_BORDER.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_BORDER;
 		if (resize)
-			window_flags |= nk_panel_flags.NK_WINDOW_SCALABLE.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_SCALABLE;
 		if (movable)
-			window_flags |= nk_panel_flags.NK_WINDOW_MOVABLE.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_MOVABLE;
 		if (no_scrollbar)
-			window_flags |= nk_panel_flags.NK_WINDOW_NO_SCROLLBAR.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_NO_SCROLLBAR;
 		if (minimizable)
-			window_flags |= nk_panel_flags.NK_WINDOW_MINIMIZABLE.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_MINIMIZABLE;
 		if (close)
-			window_flags |= nk_panel_flags.NK_WINDOW_CLOSABLE.swigValue();
+			window_flags |= nk_panel_flags.NK_WINDOW_CLOSABLE;
 
 		nk_rect bounds = new nk_rect();
 		bounds.setX(10);
@@ -97,20 +97,20 @@ public class NuklearDemo {
 						nuklear.nk_menubar_begin(ctx);
 						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_STATIC, 25, 2);
 						nuklear.nk_layout_row_push(ctx, 45);
-						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT.swigValue(), 120)) {
+						if (nuklear.nk_menu_begin_label(ctx, menu, "MENU", nk_text_alignment.NK_TEXT_LEFT, 120)) {
 
 							nuklear.nk_layout_row_dynamic(ctx, 25, 1);
-							if (nuklear.nk_menu_item_label(ctx, "Hide", nk_text_alignment.NK_TEXT_LEFT.swigValue()))
+							if (nuklear.nk_menu_item_label(ctx, "Hide", nk_text_alignment.NK_TEXT_LEFT))
 								show_menu = false;
-							if (nuklear.nk_menu_item_label(ctx, "About", nk_text_alignment.NK_TEXT_LEFT.swigValue()))
+							if (nuklear.nk_menu_item_label(ctx, "About", nk_text_alignment.NK_TEXT_LEFT))
 								show_app_about = true;
-							nuklear.nk_progress(ctx, prog, 100, nk_modify.NK_MODIFIABLE.swigValue());
+							nuklear.nk_progress(ctx, prog, 100, nk_modify.NK_MODIFIABLE);
 							nuklear.nk_slider_int(ctx, 0, slider, 16, 1);
 							nuklear.nk_checkbox_label(ctx, "check", check);
 							nuklear.nk_menu_end(ctx);
 						}
 						nuklear.nk_layout_row_push(ctx, 70);
-						nuklear.nk_progress(ctx, mprog, 100, nk_modify.NK_MODIFIABLE.swigValue());
+						nuklear.nk_progress(ctx, mprog, 100, nk_modify.NK_MODIFIABLE);
 						nuklear.nk_slider_int(ctx, 0, mslider, 16, 1);
 						nuklear.nk_checkbox_label(ctx, "check", mcheck);
 						nuklear.nk_menubar_end(ctx);
@@ -124,11 +124,11 @@ public class NuklearDemo {
 						s.setY(100);
 						s.setW(300);
 						s.setH(190);
-						if (nuklear.nk_popup_begin(ctx, popup, nk_popup_type.NK_POPUP_STATIC, "About", nk_panel_flags.NK_WINDOW_CLOSABLE.swigValue(), s)) {
+						if (nuklear.nk_popup_begin(ctx, popup, nk_popup_type.NK_POPUP_STATIC, "About", nk_panel_flags.NK_WINDOW_CLOSABLE, s)) {
 							nuklear.nk_layout_row_dynamic(ctx, 20, 1);
-							nuklear.nk_label(ctx, "Nuklear", nk_text_alignment.NK_TEXT_LEFT.swigValue());
-							nuklear.nk_label(ctx, "By Micha Mettke", nk_text_alignment.NK_TEXT_LEFT.swigValue());
-							nuklear.nk_label(ctx, "nuklear is licensed under the public domain License.", nk_text_alignment.NK_TEXT_LEFT.swigValue());
+							nuklear.nk_label(ctx, "Nuklear", nk_text_alignment.NK_TEXT_LEFT);
+							nuklear.nk_label(ctx, "By Micha Mettke", nk_text_alignment.NK_TEXT_LEFT);
+							nuklear.nk_label(ctx, "nuklear is licensed under the public domain License.", nk_text_alignment.NK_TEXT_LEFT);
 							nuklear.nk_popup_end(ctx);
 						} else
 							show_app_about = false;
@@ -244,8 +244,8 @@ public class NuklearDemo {
 		bounds.setY(50);
 		bounds.setW(210);
 		bounds.setH(250);
-		long flags = nk_panel_flags.NK_WINDOW_BORDER.swigValue() | nk_panel_flags.NK_WINDOW_MOVABLE.swigValue() | nk_panel_flags.NK_WINDOW_SCALABLE.swigValue()
-				| nk_panel_flags.NK_WINDOW_MINIMIZABLE.swigValue() | nk_panel_flags.NK_WINDOW_TITLE.swigValue();
+		long flags = nk_panel_flags.NK_WINDOW_BORDER | nk_panel_flags.NK_WINDOW_MOVABLE | nk_panel_flags.NK_WINDOW_SCALABLE
+				| nk_panel_flags.NK_WINDOW_MINIMIZABLE | nk_panel_flags.NK_WINDOW_TITLE;
 
 		while (true) {
 
@@ -265,7 +265,7 @@ public class NuklearDemo {
 						op = HARD;
 					nuklear.nk_layout_row_dynamic(ctx, 25, 1);
 					nuklear.nk_property_int(ctx, "Compression:", 0, property, 100, 10, 1);
-					nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE.swigValue(), buffer, len, buffer.length);
+					nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE, buffer, len, buffer.length);
 
 				}
 				nuklear.nk_end(ctx);
