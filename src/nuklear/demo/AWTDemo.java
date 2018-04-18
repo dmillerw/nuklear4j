@@ -17,6 +17,14 @@ public class AWTDemo extends AbstractDemo {
 	public Backend createBackend(int screenWidth, int screenHeight) {
 		AWTBackend backend = new AWTBackend();
 		backend.initialize(screenWidth, screenHeight);
+		
+		/* If you want to render in your own buffer: 
+		 * backend.initialize(BufferedImage image);
+		 * myAWTOrSwingComponent.addMouseMotionListener(backend);
+		 * myAWTOrSwingComponent.addMouseListener(backend);
+		 * myAWTOrSwingComponent.addKeyListener(backend);  
+		 */ 
+		
 		return backend;
 	}
 

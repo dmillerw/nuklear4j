@@ -90,10 +90,14 @@ public abstract class AbstractDemo {
 		int[] prog = { 40 };
 		int[] slider = { 10 };
 		int[] check = { Nuklear4j.NK_TRUE };
-
+		
+		/*
+		 * We choose to render only if an event occurs
+		 */
+		boolean firstLoop = true;
 		while (true) {
 
-			if (backend.waitEvents(50)) {
+			if (backend.waitEvents(50) || firstLoop) {
 				backend.handleEvent(ctx);
 
 				if (nuklear.nk_begin(ctx, layout, "Overview", bounds, window_flags)) {
@@ -144,6 +148,7 @@ public abstract class AbstractDemo {
 
 				backend.clear(bgColor);
 				backend.render(ctx);
+				firstLoop = false; // Ugly
 			}
 
 		} // while
