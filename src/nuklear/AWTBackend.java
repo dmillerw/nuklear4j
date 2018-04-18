@@ -297,7 +297,9 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 			}
 		}
 
-		panel.paintImmediately(0, 0, screenImage.getWidth(), screenImage.getHeight());
+		if (panel != null) {
+			panel.paintImmediately(0, 0, screenImage.getWidth(), screenImage.getHeight());
+		}
 
 	}
 
