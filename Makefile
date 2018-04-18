@@ -5,7 +5,7 @@ BIN = $(BUILD_DIR)/libnuklear-java
 SRC_DIR = src
 GENERATED_DIR_BASE = generated
 GENERATED_DIR = $(GENERATED_DIR_BASE)/nuklear/swig
-TEST_NAME = NuklearDemo
+TEST_NAME = AWTDemo
 TEST_CLASS_BIN = $(BUILD_DIR)/nuklear/demo/$(TEST_NAME).class
 
 ifndef JAVA_HOME

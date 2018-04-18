@@ -1,10 +1,11 @@
 package nuklear.demo;
 
-import nuklear.AWTBackend;
+import nuklear.Backend;
 import nuklear.Nuklear4j;
 import nuklear.swig.nk_button_behavior;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
+import nuklear.swig.nk_edit_types;
 import nuklear.swig.nk_layout_format;
 import nuklear.swig.nk_modify;
 import nuklear.swig.nk_panel;
@@ -13,25 +14,29 @@ import nuklear.swig.nk_popup_type;
 import nuklear.swig.nk_rect;
 import nuklear.swig.nk_style_header_align;
 import nuklear.swig.nk_text_alignment;
-import nuklear.swig.nk_edit_types;
 import nuklear.swig.nuklear;
 
-public class NuklearDemo {
 
-	nk_context ctx;
-	AWTBackend backend;
+/**
+ * Simple backend-agnostic demo
+ */
+public abstract class AbstractDemo {
 
+	private nk_context ctx;
+	private Backend backend;
+	
 	public void initialize() {
 		int screenWidth = 640;
 		int screenHeight = 480;
 
-		backend = new AWTBackend();
-		backend.initialize(screenWidth, screenHeight);
-
+		backend = createBackend(screenWidth, screenHeight);
+		
 		Nuklear4j.initializeNative();
 		ctx = new nk_context();
 		Nuklear4j.initializeContext(ctx, screenWidth, screenHeight, backend.getMaxCharWidth(), backend.getFontHeight());
 	}
+	
+	public abstract Backend createBackend(int screenWidth, int screenHeight);
 
 	public void overview() {
 
@@ -277,11 +282,5 @@ public class NuklearDemo {
 		}
 	}
 
-	public static void main(String argv[]) {
-		NuklearDemo demo = new NuklearDemo();
-		demo.initialize();
-		// demo.simple();
-		demo.overview();
-	}
 
 }

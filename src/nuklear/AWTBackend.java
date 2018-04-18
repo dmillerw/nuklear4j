@@ -23,7 +23,7 @@ import nuklear.swig.nk_context;
 import nuklear.swig.nk_keys;
 import nuklear.swig.nuklear;
 
-public class AWTBackend implements MouseMotionListener, MouseListener, KeyListener {
+public class AWTBackend implements Backend, MouseMotionListener, MouseListener, KeyListener {
 
 	private Canvas canvas = new Canvas();
 	Font font; 
@@ -79,6 +79,7 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 
 		// Show
 		frame = new JFrame();
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// frame.addWindowListener(this);
 		frame.add(panel);
 		frame.setResizable(false);
@@ -90,6 +91,9 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 
 	}
 
+	/* (non-Javadoc)
+	 * @see nuklear.Backend#clear(nuklear.swig.nk_color)
+	 */
 	public void clear(nk_color bgColor) {
 		Color c = new Color(bgColor.getR(), bgColor.getG(), bgColor.getB());
 		Graphics g = screenImage.getGraphics();
@@ -97,6 +101,9 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 		g.fillRect(0, 0, screenWidth, screenHeight);
 	}
 
+	/* (non-Javadoc)
+	 * @see nuklear.Backend#handleEvent(nuklear.swig.nk_context)
+	 */
 	public void handleEvent(nk_context ctx) {
 
 		nuklear.nk_input_begin(ctx);
@@ -185,6 +192,9 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 		// nk_input_motion(ctx, evt->motion.x, evt->motion.y);
 	}
 	
+	/* (non-Javadoc)
+	 * @see nuklear.Backend#render(nuklear.swig.nk_context)
+	 */
 	public void render(nk_context ctx) {
 		nuklear.nk_headless_render(ctx, intBuffer);
 		Command.build(intBuffer, commandList);
@@ -339,6 +349,9 @@ public class AWTBackend implements MouseMotionListener, MouseListener, KeyListen
 
 	}
 
+	/* (non-Javadoc)
+	 * @see nuklear.Backend#waitEvents(long)
+	 */
 	public boolean waitEvents(long delay) {
 		synchronized (eventQueue) {
 			if (eventQueue.size() > 0) {
