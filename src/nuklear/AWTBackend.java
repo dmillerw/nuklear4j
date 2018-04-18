@@ -27,8 +27,6 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	private Canvas canvas = new Canvas();
 	Font font; 
-	private int screenWidth;
-	private int screenHeight;
 	private BufferedImage screenImage;
 	FontMetrics fontMetrics;
 	private JPanel panel;
@@ -44,12 +42,36 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 	public int getMaxCharWidth() {
 		return fontMetrics.stringWidth("W");
 	}
+	
+	/**
+	 * Set the rendering surface.
+	 * @param screenImage
+	 */
+	public void setRenderingSurface(BufferedImage screenImage) {
+		if ((screenImage.getWidth() != this.screenImage.getWidth()) || (screenImage.getHeight() != this.screenImage.getHeight())) {
+			throw new IllegalStateException("Buffered image must have the same dimensions than the previous one");
+		}
+		this.screenImage = screenImage;
+	}
+	
+	/**
+	 * Rendering will be done in the provided BufferedImage. Remember to add this class as the event listener.  
+	 * @param screenImage
+	 */
+	public void initialize(BufferedImage screenImage) {
+		this.screenImage = screenImage;
+		font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
+		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
+	}
 
+	/**
+	 * Create a frame and render inside.
+	 * @param screenWidth
+	 * @param screenHeight
+	 */
 	public void initialize(int screenWidth, int screenHeight) {
-		this.screenWidth = screenWidth;
-		this.screenHeight = screenHeight;
-
-		screenImage = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB_PRE);
+		initialize(new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB_PRE));
+		
 		font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
 
@@ -98,7 +120,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 		Color c = new Color(bgColor.getR(), bgColor.getG(), bgColor.getB());
 		Graphics g = screenImage.getGraphics();
 		g.setColor(c);
-		g.fillRect(0, 0, screenWidth, screenHeight);
+		g.fillRect(0, 0, screenImage.getWidth(), screenImage.getHeight());
 	}
 
 	/* (non-Javadoc)
@@ -272,7 +294,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 			}
 		}
 
-		panel.paintImmediately(0, 0, screenWidth, screenHeight);
+		panel.paintImmediately(0, 0, screenImage.getWidth(), screenImage.getHeight());
 
 	}
 
