@@ -7,7 +7,7 @@ Nuklear4j uses [SWIG 3](http://www.swig.org) to generate the Java bindings for t
 - Immediate mode graphical user interface toolkit
 - Fully skinnable and customizable
 - The Java graphics backend uses AWT currently
-- Works with Java 5 or newer (for older version, just remove annotations in the source code) 
+- Works with Java 5 or newer (for older versions, just remove annotations in the source code) 
 
 ## Building
 
