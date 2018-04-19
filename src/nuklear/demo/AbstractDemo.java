@@ -1,11 +1,14 @@
 package nuklear.demo;
 
+import java.io.InputStream;
+
 import nuklear.Backend;
 import nuklear.Nuklear4j;
 import nuklear.swig.nk_button_behavior;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
 import nuklear.swig.nk_edit_types;
+import nuklear.swig.nk_image;
 import nuklear.swig.nk_layout_format;
 import nuklear.swig.nk_modify;
 import nuklear.swig.nk_panel;
@@ -91,6 +94,18 @@ public abstract class AbstractDemo {
 		int[] slider = { 10 };
 		int[] check = { Nuklear4j.NK_TRUE };
 		
+		
+		int editBufferMaxSize = 255;
+		String initString = "You can edit me !";
+		StringBuffer stringBuffer = new StringBuffer(editBufferMaxSize);
+		stringBuffer.append(initString);
+		stringBuffer.setLength(editBufferMaxSize);
+		int[] editBufferCurrentLength = { initString.length() };
+		byte[] byteBuffer = stringBuffer.toString().getBytes();
+		
+		InputStream is = getClass().getResourceAsStream("/image7.png");
+		nk_image image = backend.createImage(is);
+		
 		/*
 		 * We choose to render only if an event occurs
 		 */
@@ -124,6 +139,20 @@ public abstract class AbstractDemo {
 						nuklear.nk_layout_row_push(ctx, 90);
 						nuklear.nk_checkbox_label(ctx, "check", mcheck);
 						nuklear.nk_menubar_end(ctx);
+						nuklear.nk_layout_row_end(ctx);
+						
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 200, 1);
+						nuklear.nk_layout_row_push(ctx, 1.0f);
+						//nuklear.nk_edit_string(ctx, nk_edit_types.NK_EDIT_BOX, stringBuffer, editBufferCurrentLength, editBufferMaxSize);
+						nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_BOX, byteBuffer, editBufferCurrentLength, editBufferMaxSize); 
+						nuklear.nk_layout_row_end(ctx);
+						
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 80, 1);
+						nuklear.nk_layout_row_push(ctx, 0.5f);
+						nuklear.nk_button_image(ctx, image, nk_button_behavior.NK_BUTTON_DEFAULT);
+						//nuklear.nk_button_image_label(ctx, image, "home", nk_text_alignment.NK_TEXT_CENTERED, nk_button_behavior.NK_BUTTON_DEFAULT);
+						nuklear.nk_layout_row_end(ctx);
+						
 					}
 
 					if (show_app_about) {
@@ -156,83 +185,82 @@ public abstract class AbstractDemo {
 
 	}
 
-	// public void calculator() {
-	//
-	// nk_panel layout = new nk_panel();
-	// long flags = nk_panel_flags.NK_WINDOW_BORDER.swigValue() |
-	// nk_panel_flags.NK_WINDOW_MOVABLE.swigValue()
-	// | nk_panel_flags.NK_WINDOW_NO_SCROLLBAR.swigValue();
-	//
-	//
-	// nk_rect bounds = new nk_rect();
-	// bounds.setX(10);
-	// bounds.setY(10);
-	// bounds.setW(180);
-	// bounds.setH(250);
-	// if (nuklear.nk_begin(ctx, layout, "Calculator", bounds, flags) ==
-	// Nuklear4j.NK_TRUE)
-	// {
-	// int set = 0, prev = 0, op = 0;
-	// char numbers[] = "789456123";
-	// char ops[] = "+-*/";
-	// double a = 0, b = 0;
-	// //double *current = &a;
-	//
-	// int i = 0;
-	// int solve = 0;
-	// {
-	// int[] len = { 10 };
-	// int[] buffer = new int[256];
-	// nuklear.nk_layout_row_dynamic(ctx, 35, 1);
-	// //len = snprintf(buffer, 256, "%.2f", *current);
-	// nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE.swigValue(),
-	// buffer, len, 255);
-	// //buffer[len] = 0;
-	// //*current = atof(buffer);}
-	//
-	//
-	// nk_layout_row_dynamic(ctx, 35, 4);
-	// for (i = 0; i < 16; ++i) {
-	// if (i >= 12 && i < 15) {
-	// if (i > 12) continue;
-	// if (nk_button_label(ctx, "C", NK_BUTTON_DEFAULT)) {
-	// a = b = op = 0; current = &a; set = 0;
-	// } if (nk_button_label(ctx, "0", NK_BUTTON_DEFAULT)) {
-	// *current = *current*10.0f; set = 0;
-	// }
-	// if (nk_button_label(ctx, "=", NK_BUTTON_DEFAULT)) {
-	// solve = 1; prev = op; op = 0;
-	// }
-	// } else if (((i+1) % 4)) {
-	// if (nk_button_text(ctx, &numbers[(i/4)*3+i%4], 1, NK_BUTTON_DEFAULT)) {
-	// *current = *current * 10.0f + numbers[(i/4)*3+i%4] - '0';
-	// set = 0;
-	// }
-	// } else if (nk_button_text(ctx, &ops[i/4], 1, NK_BUTTON_DEFAULT)) {
-	// if (!set) {
-	// if (current != &b) {
-	// current = &b;
-	// } else {
-	// prev = op;
-	// solve = 1;
-	// }
-	// }
-	// op = ops[i/4];
-	// set = 1;
-	// }
-	// }
-	// if (solve) {
-	// if (prev == '+') a = a + b;
-	// if (prev == '-') a = a - b;
-	// if (prev == '*') a = a * b;
-	// if (prev == '/') a = a / b;
-	// current = &a;
-	// if (set) current = &b;
-	// b = 0; set = 0;
-	// }
-	// }
-	// nk_end(ctx);
-	// }
+//	public void calculator() {
+//	
+//	 nk_panel layout = new nk_panel();
+//	 long flags = nk_panel_flags.NK_WINDOW_BORDER | nk_panel_flags.NK_WINDOW_MOVABLE | nk_panel_flags.NK_WINDOW_NO_SCROLLBAR;
+//	
+//	
+//	 nk_rect bounds = new nk_rect();
+//	 bounds.setX(10);
+//	 bounds.setY(10);
+//	 bounds.setW(180);
+//	 bounds.setH(250);
+//	 if (nuklear.nk_begin(ctx, layout, "Calculator", bounds, flags)) {
+//	 boolean set = false;
+//	 boolean prev = false;
+//	 boolean op = false;
+//	 char numbers[] = { '7', '8', '9', '4', '5', '6' ,'1', '2', '3' };
+//	 char ops[] = { '+', '-', '*', '/' };
+//	 double a = 0, b = 0;
+//	 double current = a;
+//	
+//	 int i = 0;
+//	 boolean solve = false;
+//	 {
+//	 int[] len = { 10 };
+//	 int[] buffer = new int[256];
+//	 nuklear.nk_layout_row_dynamic(ctx, 35, 1);
+//	 //len = snprintf(buffer, 256, "%.2f", *current);
+//	 nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE, buffer, len, 255);
+//	 //buffer[len] = 0;
+//	 //*current = atof(buffer);}
+//	
+//	
+//	 nuklear.nk_layout_row_dynamic(ctx, 35, 4);
+//	 for (i = 0; i < 16; ++i) {
+//	 if (i >= 12 && i < 15) {
+//	 if (i > 12) continue;
+//	 if (nuklear.nk_button_label(ctx, "C", nk_button_behavior.NK_BUTTON_DEFAULT)) {
+//	 a = b = 0;
+//	 op = false; 
+//	 current = &a; set = false;
+//	 } if (nuklear.nk_button_label(ctx, "0", nk_button_behavior.NK_BUTTON_DEFAULT)) {
+//	 *current = *current*10.0f; set = false;
+//	 }
+//	 if (nuklear.nk_button_label(ctx, "=", nk_button_behavior.NK_BUTTON_DEFAULT)) {
+//	 solve = true; prev = op; op = 0;
+//	 }
+//	 } else if (((i+1) % 4)) {
+//	 if (nuklear.nk_button_text(ctx, &numbers[(i/4)*3+i%4], 1, nk_button_behavior.NK_BUTTON_DEFAULT)) {
+//	 *current = *current * 10.0f + numbers[(i/4)*3+i%4] - '0';
+//	 set = false;
+//	 }
+//	 } else if (nk_button_text(ctx, &ops[i/4], 1, nk_button_behavior.NK_BUTTON_DEFAULT)) {
+//	 if (!set) {
+//	 if (current != &b) {
+//	 current = &b;
+//	 } else {
+//	 prev = op;
+//	 solve = true;
+//	 }
+//	 }
+//	 op = ops[i/4];
+//	 set = false;
+//	 }
+//	 }
+//	 if (solve) {
+//	 if (prev == '+') a = a + b;
+//	 if (prev == '-') a = a - b;
+//	 if (prev == '*') a = a * b;
+//	 if (prev == '/') a = a / b;
+//	 current = &a;
+//	 if (set) current = &b;
+//	 b = 0; set = false;
+//	 }
+//	 }
+//	 nk_end(ctx);
+//	 }
 
 	public void simple() {
 
@@ -240,7 +268,7 @@ public abstract class AbstractDemo {
 		int HARD = 1;
 		int op = EASY;
 		int[] property = { 20 };
-		int[] buffer = new int[64];
+		byte[] buffer = new byte[64];
 		int[] len = { 0 };
 		nk_color bgColor = new nk_color();
 		bgColor.setA((short) 255);
@@ -276,7 +304,7 @@ public abstract class AbstractDemo {
 						op = HARD;
 					nuklear.nk_layout_row_dynamic(ctx, 25, 1);
 					nuklear.nk_property_int(ctx, "Compression:", 0, property, 100, 10, 1);
-					nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE, buffer, len, buffer.length);
+					nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_SIMPLE, buffer.toString().getBytes(), len, buffer.length);
 
 				}
 				nuklear.nk_end(ctx);

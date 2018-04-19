@@ -20,6 +20,7 @@ abstract class Command {
 	public static final int NK_COMMAND_TRIANGLE = nk_command_type.NK_COMMAND_TRIANGLE;
 	public static final int NK_COMMAND_TRIANGLE_FILLED = nk_command_type.NK_COMMAND_TRIANGLE_FILLED;
 	public static final int NK_COMMAND_TEXT = nk_command_type.NK_COMMAND_TEXT;
+	public static final int NK_COMMAND_IMAGE = nk_command_type.NK_COMMAND_IMAGE;
 	private int type;
 
 	public Command(int type) {
@@ -180,6 +181,17 @@ abstract class Command {
 				commandList.add(new TextCommand(x, y, w, h, len, bgA, bgR, bgG, bgB, fgA, fgR, fgG, fgB, s));
 				// System.out.println("Command: TEXT " + x + " " + y + " " + w +
 				// " " + h + " " + s);
+
+			} else if (commandType == Command.NK_COMMAND_IMAGE) {
+				checkSize(commandSize, nuklearConstants.NK_COMMAND_IMAGE_SIZE);
+				int x = drawBuffer[index++];
+				int y = drawBuffer[index++];
+				int w = drawBuffer[index++];
+				int h = drawBuffer[index++];
+				int id = drawBuffer[index++];
+				commandList.add(new ImageCommand(x, y, w, h, id));
+//				 System.out.println("Command: IMAGE " + x + " " + y + " " + w +
+//				 " " + h);
 
 			} else {
 				throw new RuntimeException("Unknown command : " + commandType);

@@ -49,7 +49,7 @@ static nk_headless_Font *headless_font;
 #define NK_COMMAND_POLYGON_FILLED_SIZE 1
 #define NK_COMMAND_POLYLINE_SIZE 1
 #define NK_COMMAND_TEXT_SIZE 13
-#define NK_COMMAND_IMAGE_SIZE 1
+#define NK_COMMAND_IMAGE_SIZE 5
 
 #define BUFFER_INDEX_CMD_COUNT 0
 #define BUFFER_INDEX_CMD_START 1
@@ -404,6 +404,17 @@ nk_headless_clear(struct nk_color col)
 	//nk_headless_fill_rect(surface, 0, 0, surface->w, surface->h, 0, col);
 }
 
+static void
+nk_headless_draw_image(int *draw_buffer, short x, short y, unsigned short w, unsigned short h, struct nk_image img) {
+	draw_buffer[buffer_index++] = NK_COMMAND_IMAGE;
+	draw_buffer[buffer_index++] = NK_COMMAND_IMAGE_SIZE;
+	draw_buffer[buffer_index++] = x;
+	draw_buffer[buffer_index++] = y;
+	draw_buffer[buffer_index++] = w;
+	draw_buffer[buffer_index++] = h;
+	draw_buffer[buffer_index++] = img.handle.id;
+}
+
 NK_API int*
 nk_headless_render(struct nk_context* ctx, int *draw_buffer)
 {
@@ -492,7 +503,11 @@ nk_headless_render(struct nk_context* ctx, int *draw_buffer)
             const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color *)cmd;
             nk_headless_fill_rect_multi_color(draw_buffer, r->x, r->y, r->w, r->h, r->left, r->top, r->right, r->bottom);
         } break;
-        case NK_COMMAND_IMAGE:
+		case NK_COMMAND_IMAGE: {
+			const struct nk_command_image *q = (const struct nk_command_image *) cmd;
+			nk_headless_draw_image(draw_buffer, q->x, q->y, q->w, q->h, q->img);
+			command_count++;
+		} break;
         case NK_COMMAND_ARC:
         case NK_COMMAND_ARC_FILLED:
         default: break;
@@ -639,15 +654,16 @@ nk_headless_shutdown(void)
 }
 
 NK_API nk_flags
-nk_edit_string2(struct nk_context* ctx, nk_flags flags, int *buffer, int *len, int max) {
-	char* cbuffer = malloc(max);
-	for (int i = 0; i < max; i++) {
-		cbuffer[i] = buffer[i];
-	}
-	nk_edit_string(ctx, flags, cbuffer, len, max, 0);
-	for (int i = 0; i < max; i++) {
-		buffer[i] = cbuffer[i];
-	}
-	free(cbuffer);
+nk_edit_string2(struct nk_context* ctx, nk_flags flags, char *buffer, int *len, int max) {
+	nk_edit_string(ctx, flags, buffer, len, max, 0);
+//	char* cbuffer = malloc(max);
+//	for (int i = 0; i < max; i++) {
+//		cbuffer[i] = buffer[i];
+//	}
+//	nk_edit_string(ctx, flags, cbuffer, len, max, 0);
+//	for (int i = 0; i < max; i++) {
+//		buffer[i] = cbuffer[i];
+//	}
+//	free(cbuffer);
 }
 

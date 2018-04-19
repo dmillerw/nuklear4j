@@ -12,14 +12,21 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import nuklear.swig.nk_buttons;
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
+import nuklear.swig.nk_handle;
+import nuklear.swig.nk_image;
 import nuklear.swig.nk_keys;
 import nuklear.swig.nuklear;
 
@@ -42,9 +49,10 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 	public int getMaxCharWidth() {
 		return fontMetrics.stringWidth("W");
 	}
-	
+
 	/**
 	 * Set the rendering surface.
+	 * 
 	 * @param screenImage
 	 */
 	public void setRenderingSurface(BufferedImage screenImage) {
@@ -53,16 +61,18 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 		}
 		this.screenImage = screenImage;
 	}
-	
+
 	public void setFont(Font font) {
 		if (screenImage != null) {
 			throw new IllegalStateException("Font can't be changed after initialization");
 		}
 		this.font = font;
 	}
-	
+
 	/**
-	 * Rendering will be done in the provided BufferedImage. Remember to add this class as the event listener.  
+	 * Rendering will be done in the provided BufferedImage. Remember to add
+	 * this class as the event listener.
+	 * 
 	 * @param screenImage
 	 */
 	public void initialize(BufferedImage screenImage) {
@@ -72,6 +82,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	/**
 	 * Create a frame and render inside.
+	 * 
 	 * @param screenWidth
 	 * @param screenHeight
 	 */
@@ -116,7 +127,9 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see nuklear.Backend#clear(nuklear.swig.nk_color)
 	 */
 	public void clear(nk_color bgColor) {
@@ -126,7 +139,9 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 		g.fillRect(0, 0, screenImage.getWidth(), screenImage.getHeight());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see nuklear.Backend#handleEvent(nuklear.swig.nk_context)
 	 */
 	public void handleEvent(nk_context ctx) {
@@ -152,12 +167,10 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_PRESSED: BUTTON1");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									Nuklear4j.NK_TRUE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(), Nuklear4j.NK_TRUE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_PRESSED: BUTTON3");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									Nuklear4j.NK_TRUE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(), Nuklear4j.NK_TRUE);
 						}
 					} else if (me.getID() == MouseEvent.MOUSE_RELEASED) {
 						// int Nuklear.NK_TRUE = (me.getID() ==
@@ -166,12 +179,10 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_RELEASED: BUTTON1");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									Nuklear4j.NK_FALSE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(), Nuklear4j.NK_FALSE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_RELEASED: BUTTON3");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									Nuklear4j.NK_FALSE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(), Nuklear4j.NK_FALSE);
 						}
 					} else if (me.getID() == MouseEvent.MOUSE_DRAGGED) {
 						// int Nuklear.NK_TRUE = (me.getID() ==
@@ -180,12 +191,10 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
 							// System.out.println("MOUSE_RELEASED: BUTTON1");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(),
-									Nuklear4j.NK_TRUE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(), Nuklear4j.NK_TRUE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_RELEASED: BUTTON3");
-							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(),
-									Nuklear4j.NK_TRUE);
+							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_RIGHT, me.getX(), me.getY(), Nuklear4j.NK_TRUE);
 						}
 						nuklear.nk_input_motion(ctx, me.getX(), me.getY());
 					}
@@ -199,8 +208,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 					int keyCode = e.getKeyCode();
 					boolean pressed = (e.getID() == KeyEvent.KEY_PRESSED);
 					if (keyCode == KeyEvent.VK_BACK_SPACE) {
-						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_BACKSPACE,
-								pressed ? Nuklear4j.NK_TRUE : Nuklear4j.NK_FALSE);
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_BACKSPACE, pressed ? Nuklear4j.NK_TRUE : Nuklear4j.NK_FALSE);
 					} else {
 						if (!pressed) {
 							if (c != KeyEvent.CHAR_UNDEFINED) {
@@ -216,8 +224,55 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 		// nk_input_motion(ctx, evt->motion.x, evt->motion.y);
 	}
+
+	private Hashtable imageMap = new Hashtable();
+	private int imageId;
+
+	private nk_image createImage(BufferedImage javaImage) {
+		nk_handle imageHandle = new nk_handle();
+		imageHandle.setId(imageId);
+		nk_image nuklearImage = new nk_image();
+		nuklearImage.setW(javaImage.getWidth());
+		nuklearImage.setH(javaImage.getHeight());
+		nuklearImage.setHandle(imageHandle);
+		imageMap.put(imageId, javaImage);
+		imageId++;
+		return nuklearImage;
+	}
+
+	public nk_image createImage(InputStream is) {
+		try {
+			BufferedImage javaImage = ImageIO.read(is);
+			return createImage(javaImage);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
-	/* (non-Javadoc)
+	public nk_image createARGBImage(int w, int h) {
+		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		return createImage(image);
+	}
+	
+	public void setARGB(nk_image nuklearImage, int[] argb) {
+		BufferedImage image = (BufferedImage)imageMap.get(nuklearImage.getHandle().getId());
+		if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
+			throw new IllegalStateException("Image type is not ARGB");
+		}
+		int[] data = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(argb, 0, data, 0, argb.length);
+	}
+	
+	public void destroyImage(nk_image nuklearImage) {
+		if (nuklearImage != null) {
+			imageMap.remove(nuklearImage.getHandle().getId());
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see nuklear.Backend#render(nuklear.swig.nk_context)
 	 */
 	public void render(nk_context ctx) {
@@ -294,6 +349,14 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 				int stringH = fontMetrics.getAscent();
 				g.drawString(tc.s, x, y + stringH);
 
+			} else if (command.getType() == Command.NK_COMMAND_IMAGE) {
+				ImageCommand ic = (ImageCommand) command;
+				int x = ic.x;
+				int y = ic.y;
+				int w = ic.w;
+				int h = ic.h;
+				BufferedImage image = (BufferedImage)imageMap.get(ic.id);
+				g.drawImage(image, x, y, w, h, null);
 			}
 		}
 
@@ -376,7 +439,9 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see nuklear.Backend#waitEvents(long)
 	 */
 	public boolean waitEvents(long delay) {
@@ -385,7 +450,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 				return true;
 			}
 		}
-		
+
 		if (delay >= 0) {
 			try {
 				Thread.sleep(delay);
@@ -394,13 +459,11 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 			}
 		}
 		return false;
-		
+
 	}
 
 	public Vector getEventQueue() {
 		return eventQueue;
 	}
-	
-	
-	
+
 }

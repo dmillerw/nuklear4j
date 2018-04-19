@@ -17,6 +17,6 @@ NK_API void nk_headless_clear(struct nk_color clear);
 NK_API int* nk_headless_render();
 NK_API void nk_headless_shutdown(void);
 
-NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, int *buffer, int *len, int max);
+NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, char *buffer, int *len, int max);
 
 #endif

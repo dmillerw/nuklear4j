@@ -1,20 +1,31 @@
 package nuklear;
 
+import java.io.InputStream;
+
 import nuklear.swig.nk_color;
 import nuklear.swig.nk_context;
+import nuklear.swig.nk_image;
 
 public interface Backend {
 
-	void clear(nk_color bgColor);
+	public void clear(nk_color bgColor);
 
-	void handleEvent(nk_context ctx);
+	public void handleEvent(nk_context ctx);
 
-	void render(nk_context ctx);
+	public void render(nk_context ctx);
 
-	boolean waitEvents(long delay);
+	public boolean waitEvents(long delay);
 
-	int getFontHeight();
+	public int getFontHeight();
 
-	int getMaxCharWidth();
-
+	public int getMaxCharWidth();
+	
+	public nk_image createImage(InputStream is);
+	
+	public nk_image createARGBImage(int w, int h);
+	
+	public void setARGB(nk_image nuklearImage, int[] argb);
+	
+	public void destroyImage(nk_image nuklearImage);
+	
 }
