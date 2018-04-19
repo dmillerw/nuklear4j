@@ -207,9 +207,40 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 					char c = e.getKeyChar();
 					int keyCode = e.getKeyCode();
 					boolean pressed = (e.getID() == KeyEvent.KEY_PRESSED);
+					int nkPressed = pressed ? Nuklear4j.NK_TRUE : Nuklear4j.NK_FALSE;
 					if (keyCode == KeyEvent.VK_BACK_SPACE) {
-						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_BACKSPACE, pressed ? Nuklear4j.NK_TRUE : Nuklear4j.NK_FALSE);
-					} else {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_BACKSPACE, nkPressed);
+					} else if (keyCode == KeyEvent.VK_UP) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_UP, nkPressed);
+					} else if (keyCode == KeyEvent.VK_DOWN) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_DOWN, nkPressed);
+					} else if (keyCode == KeyEvent.VK_LEFT) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_LEFT, nkPressed);
+					} else if (keyCode == KeyEvent.VK_RIGHT) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_RIGHT, nkPressed);
+					} else if (keyCode == KeyEvent.VK_DELETE) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_DEL, nkPressed);
+					} else if (keyCode == KeyEvent.VK_ENTER) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_ENTER, nkPressed);
+					} else if (keyCode == KeyEvent.VK_SHIFT) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_SHIFT, nkPressed);
+					} else if (keyCode == KeyEvent.VK_TAB) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_TAB, nkPressed);
+					} else if (keyCode == KeyEvent.VK_CONTROL) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_CTRL, nkPressed);
+					} else if (keyCode == KeyEvent.VK_END) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_TEXT_LINE_END, nkPressed);
+					} else if (keyCode == KeyEvent.VK_HOME) {
+						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_TEXT_LINE_START, nkPressed);
+					} 
+//					else if (keyCode == KeyEvent.VK_C && e.isControlDown() && pressed)  {
+//						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_COPY, nkPressed);
+//					} else if (keyCode == KeyEvent.VK_X && e.isControlDown()) {
+//						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_CUT, Nuklear4j.NK_FALSE);
+//					} else if (keyCode == KeyEvent.VK_V && e.isControlDown()) {
+//						nuklear.nk_input_key(ctx, nk_keys.NK_KEY_PASTE, nkPressed);
+//					} 
+					else {
 						if (!pressed) {
 							if (c != KeyEvent.CHAR_UNDEFINED) {
 								nuklear.nk_input_char(ctx, c);

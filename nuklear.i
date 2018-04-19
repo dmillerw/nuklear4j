@@ -31,7 +31,7 @@ extern int initialize(int w, int h);
 #define NK_COMMAND_POLYGON_FILLED_SIZE 1
 #define NK_COMMAND_POLYLINE_SIZE 1
 #define NK_COMMAND_TEXT_SIZE 13
-#define NK_COMMAND_IMAGE_SIZE 1
+#define NK_COMMAND_IMAGE_SIZE 5
  
 #define NK_API extern
 #define NK_FLAG(x) (1 << (x))
@@ -250,8 +250,6 @@ struct nk_panel {
     nk_flags flags;
 };
 
-
-
 /* User Input */
 NK_API void nk_input_begin(struct nk_context*);
 NK_API void nk_input_motion(struct nk_context*, int x, int y);
@@ -297,6 +295,9 @@ NK_API void nk_popup_end(struct nk_context*);
 /* Widgets: Buttons */
 NK_API bool nk_button_text(struct nk_context *ctx, const char *title, int len, enum nk_button_behavior);
 NK_API bool nk_button_label(struct nk_context *ctx, const char *title, enum nk_button_behavior);
+NK_API int  nk_button_image(struct nk_context*, struct nk_image img, enum nk_button_behavior);
+NK_API int  nk_button_image_label(struct nk_context*, struct nk_image img, const char*, nk_flags text_alignment, enum nk_button_behavior);
+NK_API int  nk_button_image_text(struct nk_context*, struct nk_image img, const char*, int, nk_flags alignment, enum nk_button_behavior);
 
 /* Widgets: Radio */
 NK_API bool nk_radio_label(struct nk_context*, const char*, int *active);
@@ -356,10 +357,6 @@ NK_API void nk_property_int(struct nk_context *layout, const char *name, int min
 NK_API float nk_propertyf(struct nk_context *layout, const char *name, float min, float val, float max, float step, float inc_per_pixel);
 NK_API int nk_propertyi(struct nk_context *layout, const char *name, int min, int val, int max, int step, int inc_per_pixel);
 
-/* Widgets: TextEdit */
-NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, int *buffer, int *len, int max);
-NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_filter);
-
 /* Widgets: Progressbar */
 NK_API int nk_progress(struct nk_context*, nk_size *cur, nk_size max, int modifyable);
 NK_API nk_size nk_prog(struct nk_context*, nk_size cur, nk_size max, int modifyable);
@@ -383,4 +380,90 @@ NK_API int nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned
 extern int initialize(int w, int h);
 NK_API void nk_headless_init(struct nk_context* ctx, int w, int h, int max_char_width, int font_height);
 NK_API void nk_headless_render(struct nk_context* ctx, int* draw_buffer);
+
+%include various.i
+
+/* Widgets: TextEdit */
+//NK_API nk_flags nk_edit_string(struct nk_context*, nk_flags, char *SBUF, int *len, int max, nk_filter);
+NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, char *BYTE, int *len, int max);
+NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_filter);
+
+/*
+ * Notes below
+ */
+
+/* 
+ * How map char* to a Java array instead of a String  
+ *
+ * default behaviour is that of input arg, Java cannot return a value in a 
+ * string argument, so any changes made by f1(char*) will not be seen in the Java
+ * string passed to the f1 function.
+*/
+
+//void f1(char *s);
+//%include various.i
+/* use the BYTE argout typemap to get around this. Changes in the string by 
+ * f2 can be seen in Java. */
+//void f2(char *BYTE);
+
+/* Alternative approach uses a StringBuffer typemap for argout */
+
+/* Define the types to use in the generated JNI C code and Java code */
+%typemap(jni) char *SBUF "jobject"
+%typemap(jtype) char *SBUF "StringBuffer"
+%typemap(jstype) char *SBUF "StringBuffer"
+
+/* How to convert Java(JNI) type to requested C type */
+%typemap(in) char *SBUF {
+
+  $1 = NULL;
+  if($input != NULL) {
+    /* Get the String from the StringBuffer */
+    jmethodID setLengthID;
+    jclass sbufClass = (*jenv)->GetObjectClass(jenv, $input);
+    jmethodID toStringID = (*jenv)->GetMethodID(jenv, sbufClass, "toString", "()Ljava/lang/String;");
+    jstring js = (jstring) (*jenv)->CallObjectMethod(jenv, $input, toStringID);
+
+    /* Convert the String to a C string */
+    const char *pCharStr = (*jenv)->GetStringUTFChars(jenv, js, 0);
+
+    /* Take a copy of the C string as the typemap is for a non const C string */
+    jmethodID capacityID = (*jenv)->GetMethodID(jenv, sbufClass, "capacity", "()I");
+    jint capacity = (*jenv)->CallIntMethod(jenv, $input, capacityID);
+    $1 = (char *) malloc(capacity+1);
+    strcpy($1, pCharStr);
+
+    /* Release the UTF string we obtained with GetStringUTFChars */
+    (*jenv)->ReleaseStringUTFChars(jenv,  js, pCharStr);
+
+    /* Zero the original StringBuffer, so we can replace it with the result */
+    setLengthID = (*jenv)->GetMethodID(jenv, sbufClass, "setLength", "(I)V");
+    (*jenv)->CallVoidMethod(jenv, $input, setLengthID, (jint) 0);
+  }
+}
+
+/* How to convert the C type to the Java(JNI) type */
+%typemap(argout) char *SBUF {
+
+  if($1 != NULL) {
+    /* Append the result to the empty StringBuffer */
+    jstring newString = (*jenv)->NewStringUTF(jenv, $1);
+    jclass sbufClass = (*jenv)->GetObjectClass(jenv, $input);
+    jmethodID appendStringID = (*jenv)->GetMethodID(jenv, sbufClass, "append", "(Ljava/lang/String;)Ljava/lang/StringBuffer;");
+    (*jenv)->CallObjectMethod(jenv, $input, appendStringID, newString);
+
+    /* Clean up the string object, no longer needed */
+    free($1);
+    $1 = NULL;
+  }  
+}
+/* Prevent the default freearg typemap from being used */
+%typemap(freearg) char *SBUF ""
+
+/* Convert the jstype to jtype typemap type */
+%typemap(javain) char *SBUF "$javainput"
+
+/* apply the new typemap to our function */
+//void f3(char *SBUF);
+
  

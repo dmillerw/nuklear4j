@@ -46,7 +46,7 @@ $(TEST_CLASS_BIN): $(BIN)
 	$(JAVA_HOME)/bin/javac -source 1.5 -target 1.5 -d $(BUILD_DIR) $(SRC_DIR)/nuklear/*.java $(SRC_DIR)/nuklear/swig/*.java $(SRC_DIR)/nuklear/demo/*.java $(GENERATED_DIR)/*.java
 
 test:
-	$(JAVA_HOME)/bin/java -Djava.library.path=build -cp build nuklear.demo.$(TEST_NAME)
+	$(JAVA_HOME)/bin/java -Djava.library.path=build -cp build:resources nuklear.demo.$(TEST_NAME)
 
 clean:
 	 rm -rf $(BIN) $(OBJS) $(GENERATED_DIR_BASE) $(BUILD_DIR)
