@@ -26,12 +26,12 @@ make test
 ## Gallery
 ![screenshot](https://raw.githubusercontent.com/glegris/nuklear4j/master/resources/nuklear_snapshot-19042018.png)
 
-##CREDITS:
+## Credits
 Nuklear is developed by Micha Mettke and every direct or indirect contributor to the GitHub.
 
 Nuklear4j is developed by Guillaume Legris
 
-##LICENSE:
+## License
 This software is under the MIT license.
 
 ## Original description
