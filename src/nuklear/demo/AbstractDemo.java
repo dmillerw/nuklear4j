@@ -102,6 +102,11 @@ public abstract class AbstractDemo {
 		//comboSize.setX(200);
 		//comboSize.setY(200);
 		
+		int EASY = 0;
+		int HARD = 1;
+		int op = EASY;
+		int[] property = { 20 };
+		
 		int editBufferMaxSize = 255;
 		String initString = "You can edit me !";
 		StringBuffer stringBuffer = new StringBuffer(editBufferMaxSize);
@@ -158,6 +163,14 @@ public abstract class AbstractDemo {
 						nuklear.nk_layout_row_push(ctx, 1.0f);
 						currentChoice = nuklear.nk_combo(ctx, choices, choices.length, currentChoice, comboItemHeight);
 						nuklear.nk_layout_row_end(ctx);
+						
+						nuklear.nk_layout_row_dynamic(ctx, 30, 2);
+						if (nuklear.nk_option_label(ctx, "easy", op == EASY))
+							op = EASY;
+						if (nuklear.nk_option_label(ctx, "hard", op == HARD))
+							op = HARD;
+						nuklear.nk_layout_row_dynamic(ctx, 25, 1);
+						nuklear.nk_property_int(ctx, "Compression:", 0, property, 100, 10, 1);
 						
 						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 50, 2);
 						nuklear.nk_layout_row_push(ctx, 0.3f);
