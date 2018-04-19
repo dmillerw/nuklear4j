@@ -376,6 +376,44 @@ NK_API int nk_checkbox_label(struct nk_context*, const char*, int *active);
 NK_API int nk_checkbox_text(struct nk_context*, const char*, int, int *active);
 NK_API int nk_checkbox_flags_label(struct nk_context*, const char*, unsigned int *flags, unsigned int value);
 NK_API int nk_checkbox_flags_text(struct nk_context*, const char*, int, unsigned int *flags, unsigned int value);
+
+/* Widgets: Combobox */
+NK_API int nk_combo_separator(struct nk_context*, const char *items_separated_by_separator, int separator, int selected, int count, int item_height);
+NK_API int nk_combo_string(struct nk_context*, const char *items_separated_by_zeros, int selected, int count, int item_height);
+//NK_API int nk_combo_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void *userdata, int selected, int count, int item_height);
+NK_API void nk_combobox_string(struct nk_context*, const char *items_separated_by_zeros, int *selected, int count, int item_height);
+NK_API void nk_combobox_separator(struct nk_context*, const char *items_separated_by_separator, int separator,int *selected, int count, int item_height);
+//NK_API void nk_combobox_callback(struct nk_context*, void(*item_getter)(void*, int, const char**), void*, int *selected, int count, int item_height);
+
+/* Widgets: Combobox: abstract */
+NK_API int nk_combo_begin_text(struct nk_context*, struct nk_panel*, const char *selected, int, int max_height);
+NK_API int nk_combo_begin_label(struct nk_context*, struct nk_panel*, const char *selected, int max_height);
+NK_API int nk_combo_begin_color(struct nk_context*, struct nk_panel*, struct nk_color color, int max_height);
+NK_API int nk_combo_begin_symbol(struct nk_context*, struct nk_panel*, enum nk_symbol_type,  int max_height);
+NK_API int nk_combo_begin_symbol_label(struct nk_context*, struct nk_panel*, const char *selected, enum nk_symbol_type, int height);
+NK_API int nk_combo_begin_symbol_text(struct nk_context*, struct nk_panel*, const char *selected, int, enum nk_symbol_type, int height);
+NK_API int nk_combo_begin_image(struct nk_context*, struct nk_panel*, struct nk_image img,  int max_height);
+NK_API int nk_combo_begin_image_label(struct nk_context*, struct nk_panel*, const char *selected, struct nk_image, int height);
+NK_API int nk_combo_begin_image_text(struct nk_context*, struct nk_panel*, const char *selected, int, struct nk_image, int height);
+NK_API int nk_combo_item_label(struct nk_context*, const char*, nk_flags alignment);
+NK_API int nk_combo_item_text(struct nk_context*, const char*,int, nk_flags alignment);
+NK_API int nk_combo_item_image_label(struct nk_context*, struct nk_image, const char*, nk_flags alignment);
+NK_API int nk_combo_item_image_text(struct nk_context*, struct nk_image, const char*, int,nk_flags alignment);
+NK_API int nk_combo_item_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags alignment);
+NK_API int nk_combo_item_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags alignment);
+NK_API void nk_combo_close(struct nk_context*);
+NK_API void nk_combo_end(struct nk_context*);
+
+/* Widgets: Contextual */
+NK_API int nk_contextual_begin(struct nk_context*, struct nk_panel*, nk_flags, struct nk_vec2, struct nk_rect trigger_bounds);
+NK_API int nk_contextual_item_text(struct nk_context*, const char*, int,nk_flags align);
+NK_API int nk_contextual_item_label(struct nk_context*, const char*, nk_flags align);
+NK_API int nk_contextual_item_image_label(struct nk_context*, struct nk_image, const char*, nk_flags alignment);
+NK_API int nk_contextual_item_image_text(struct nk_context*, struct nk_image, const char*, int len, nk_flags alignment);
+NK_API int nk_contextual_item_symbol_label(struct nk_context*, enum nk_symbol_type, const char*, nk_flags alignment);
+NK_API int nk_contextual_item_symbol_text(struct nk_context*, enum nk_symbol_type, const char*, int, nk_flags alignment);
+NK_API void nk_contextual_close(struct nk_context*);
+NK_API void nk_contextual_end(struct nk_context*);
  
 extern int initialize(int w, int h);
 NK_API void nk_headless_init(struct nk_context* ctx, int w, int h, int max_char_width, int font_height);
@@ -387,6 +425,9 @@ NK_API void nk_headless_render(struct nk_context* ctx, int* draw_buffer);
 //NK_API nk_flags nk_edit_string(struct nk_context*, nk_flags, char *SBUF, int *len, int max, nk_filter);
 NK_API nk_flags nk_edit_string2(struct nk_context*, nk_flags, char *BYTE, int *len, int max);
 NK_API nk_flags nk_edit_buffer(struct nk_context*, nk_flags, struct nk_text_edit*, nk_filter);
+
+NK_API int nk_combo(struct nk_context*, const char **STRING_ARRAY, int count, int selected, int item_height);
+NK_API void nk_combobox(struct nk_context*, const char **STRING_ARRAY, int count, int *selected, int item_height);
 
 /*
  * Notes below

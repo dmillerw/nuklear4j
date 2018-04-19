@@ -17,6 +17,7 @@ import nuklear.swig.nk_popup_type;
 import nuklear.swig.nk_rect;
 import nuklear.swig.nk_style_header_align;
 import nuklear.swig.nk_text_alignment;
+import nuklear.swig.nk_vec2;
 import nuklear.swig.nuklear;
 
 
@@ -94,6 +95,12 @@ public abstract class AbstractDemo {
 		int[] slider = { 10 };
 		int[] check = { Nuklear4j.NK_TRUE };
 		
+		int currentChoice = 0;
+		String[] choices = new String[] { "Earth", "Mars", "Saturn" }; 
+		int comboItemHeight = 25;
+		//nk_vec2 comboSize = new nk_vec2();
+		//comboSize.setX(200);
+		//comboSize.setY(200);
 		
 		int editBufferMaxSize = 255;
 		String initString = "You can edit me !";
@@ -141,16 +148,22 @@ public abstract class AbstractDemo {
 						nuklear.nk_menubar_end(ctx);
 						nuklear.nk_layout_row_end(ctx);
 						
-						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 200, 1);
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 100, 1);
 						nuklear.nk_layout_row_push(ctx, 1.0f);
 						//nuklear.nk_edit_string(ctx, nk_edit_types.NK_EDIT_BOX, stringBuffer, editBufferCurrentLength, editBufferMaxSize);
 						nuklear.nk_edit_string2(ctx, nk_edit_types.NK_EDIT_BOX, byteBuffer, editBufferCurrentLength, editBufferMaxSize); 
 						nuklear.nk_layout_row_end(ctx);
 						
-						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 80, 1);
-						nuklear.nk_layout_row_push(ctx, 0.5f);
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 25, 1);
+						nuklear.nk_layout_row_push(ctx, 1.0f);
+						currentChoice = nuklear.nk_combo(ctx, choices, choices.length, currentChoice, comboItemHeight);
+						nuklear.nk_layout_row_end(ctx);
+						
+						nuklear.nk_layout_row_begin(ctx, nk_layout_format.NK_DYNAMIC, 50, 2);
+						nuklear.nk_layout_row_push(ctx, 0.3f);
 						nuklear.nk_button_image(ctx, image, nk_button_behavior.NK_BUTTON_DEFAULT);
-						//nuklear.nk_button_image_label(ctx, image, "home", nk_text_alignment.NK_TEXT_CENTERED, nk_button_behavior.NK_BUTTON_DEFAULT);
+						nuklear.nk_layout_row_push(ctx, 0.5f);
+						nuklear.nk_button_image_label(ctx, image, "button with label", nk_text_alignment.NK_TEXT_CENTERED, nk_button_behavior.NK_BUTTON_DEFAULT);
 						nuklear.nk_layout_row_end(ctx);
 						
 					}
