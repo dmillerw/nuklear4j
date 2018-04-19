@@ -204,6 +204,9 @@ nk_headless_stroke_triangle(int *draw_buffer, short x0, short y0, short x1,
 static void
 nk_headless_fill_polygon(int *draw_buffer, const struct nk_vec2i *pnts, int count, struct nk_color col)
 {
+
+	/* not used  by any widget currently */
+
     /*
 	Sint16 p_x[nk_headless_MAX_POINTS];
     Sint16 p_y[nk_headless_MAX_POINTS];
@@ -220,6 +223,9 @@ static void
 nk_headless_stroke_polygon(int *draw_buffer, const struct nk_vec2i *pnts, int count,
     unsigned short line_thickness, struct nk_color col)
 {
+
+	/* not used  by any widget currently */
+
     /* Note: thickness is not used by default */
 	/*
     Sint16 p_x[nk_headless_MAX_POINTS];
@@ -237,6 +243,9 @@ static void
 nk_headless_stroke_polyline(int *draw_buffer, const struct nk_vec2i *pnts,
     int count, unsigned short line_thickness, struct nk_color col)
 {
+
+	/* not used  by any widget currently */
+
 	/*
     int x0, y0, x1, y1;
     if (count == 1) {
@@ -304,6 +313,9 @@ nk_headless_stroke_curve(int *draw_buffer, struct nk_vec2i p1,
     struct nk_vec2i p2, struct nk_vec2i p3, struct nk_vec2i p4, unsigned int num_segments,
     unsigned short line_thickness, struct nk_color col)
 {
+
+	/* not used  by any widget currently */
+
 	/*
     unsigned int i_step;
     float t_step;
@@ -381,20 +393,23 @@ static void
 nk_headless_fill_rect_multi_color(int *draw_buffer, short x, short y, unsigned short w, unsigned short h,
     struct nk_color left, struct nk_color top,  struct nk_color right, struct nk_color bottom)
 {
-    struct nk_color X1, X2, Y;
-    float fraction_x, fraction_y;
-    int i,j;
 
-    for (j = 0; j < h; j++) {
-        fraction_y = ((float)j) / h;
-        for (i = 0; i < w; i++) {
-            fraction_x = ((float)i) / w;
-            interpolate_color(left, top, &X1, fraction_x);
-            interpolate_color(right, bottom, &X2, fraction_x);
-            interpolate_color(X1, X2, &Y, fraction_y);
-            /*pixelRGBA(surface, x + i, y + j, Y.r, Y.g, Y.b, Y.a);  */
-        }
-    }
+	/* TODO: only used by nk_draw_color_picker() currently */
+
+//    struct nk_color X1, X2, Y;
+//    float fraction_x, fraction_y;
+//    int i,j;
+//
+//    for (j = 0; j < h; j++) {
+//        fraction_y = ((float)j) / h;
+//        for (i = 0; i < w; i++) {
+//            fraction_x = ((float)i) / w;
+//            interpolate_color(left, top, &X1, fraction_x);
+//            interpolate_color(right, bottom, &X2, fraction_x);
+//            interpolate_color(X1, X2, &Y, fraction_y);
+//            /*pixelRGBA(surface, x + i, y + j, Y.r, Y.g, Y.b, Y.a);  */
+//        }
+//    }
 }
 
 void
