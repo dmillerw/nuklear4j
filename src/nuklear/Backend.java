@@ -11,6 +11,8 @@ public interface Backend {
 	public void clear(nk_color bgColor);
 
 	public void handleEvent(nk_context ctx);
+	
+	public void setRenderingSurface(Object graphics, int w, int h);
 
 	public void render(nk_context ctx);
 
@@ -24,7 +26,7 @@ public interface Backend {
 	
 	public nk_image createARGBImage(int w, int h);
 	
-	public void setARGB(nk_image nuklearImage, int[] argb);
+	public void setImageData(nk_image nuklearImage, int[] argb);
 	
 	public void destroyImage(nk_image nuklearImage);
 	

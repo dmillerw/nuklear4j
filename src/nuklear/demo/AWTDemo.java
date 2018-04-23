@@ -3,19 +3,24 @@ package nuklear.demo;
 import nuklear.AWTBackend;
 import nuklear.Backend;
 
+/* Simple demo where all the work is done in the backend. You can just focus on the nuklear API.
+ * It's adapted when you don't need to integrate nuklear with your own widgets */
 public class AWTDemo extends AbstractDemo {
+	
+	private static int PANEL_WIDTH = 640;
+	private static int PANEL_HEIGHT = 480;
+	
+	private AWTBackend backend = new AWTBackend();
 
 	public static void main(String argv[]) {
 		AWTDemo demo = new AWTDemo();
-		demo.initialize();
-		// demo.simple();
-		demo.overview();
+		demo.initialize(PANEL_WIDTH, PANEL_HEIGHT);
+		demo.overviewLoop();
 	}
 
 
 	//@Override
-	public Backend createBackend(int screenWidth, int screenHeight) {
-		AWTBackend backend = new AWTBackend();
+	public Backend getBackend(int screenWidth, int screenHeight) {
 		
 		/*
 		 * Uncomment if you want to play with fonts (default: Font.MONOSPACED, Font.PLAIN, 10)

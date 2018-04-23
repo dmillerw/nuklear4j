@@ -1,6 +1,5 @@
 package nuklear;
 
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -31,16 +30,21 @@ import nuklear.swig.nk_keys;
 import nuklear.swig.nuklear;
 
 public class AWTBackend implements Backend, MouseMotionListener, MouseListener, KeyListener {
-
-	private Canvas canvas = new Canvas();
+	
+	private boolean initialized = false;
 	private Font font = new Font(Font.MONOSPACED, Font.PLAIN, 10);
-	private BufferedImage screenImage;
 	private FontMetrics fontMetrics;
-	private JPanel panel;
-	private JFrame frame;
-	private Vector eventQueue;
+	private Vector eventQueue = new Vector();
 	private Vector commandList = new Vector();
 	private int[] intBuffer = new int[10000];
+	private Graphics renderingSurfaceGraphics;
+	private int renderingSurfaceWidth;
+	private int renderingSurfaceHeight;
+	
+	/* Components created for standalone mode only*/
+	private BufferedImage offscreenImage;
+	private JPanel panel;
+	private JFrame frame;
 
 	public int getFontHeight() {
 		return fontMetrics.getHeight();
@@ -52,21 +56,32 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	/**
 	 * Set the rendering surface.
+	 * @param h 
+	 * @param w 
 	 * 
-	 * @param screenImage
+	 * @param offscreenImage
 	 */
-	public void setRenderingSurface(BufferedImage screenImage) {
-		if ((screenImage.getWidth() != this.screenImage.getWidth()) || (screenImage.getHeight() != this.screenImage.getHeight())) {
-			throw new IllegalStateException("Buffered image must have the same dimensions than the previous one");
-		}
-		this.screenImage = screenImage;
+	public void setRenderingSurface(Object graphics, int w, int h) {
+		this.renderingSurfaceGraphics = (Graphics) graphics;
+		this.renderingSurfaceWidth = w;
+		this.renderingSurfaceHeight = h;
+//		if (fontMetrics == null) {
+//			fontMetrics = renderingSurfaceGraphics.getFontMetrics(font);
+//		}
 	}
 
 	public void setFont(Font font) {
-		if (screenImage != null) {
+		if (initialized) {
 			throw new IllegalStateException("Font can't be changed after initialization");
 		}
 		this.font = font;
+	}
+	
+	public void initialize() {
+		initialized = true;
+		// Need a graphic context to get font metrics
+		BufferedImage image = new BufferedImage(50, 50, BufferedImage.TYPE_INT_ARGB_PRE);
+		fontMetrics = image.getGraphics().getFontMetrics(font);
 	}
 
 	/**
@@ -76,8 +91,10 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 	 * @param screenImage
 	 */
 	public void initialize(BufferedImage screenImage) {
-		this.screenImage = screenImage;
-		fontMetrics = screenImage.getGraphics().getFontMetrics(font);
+		initialize();
+		this.offscreenImage = screenImage;
+		setRenderingSurface(screenImage.getGraphics(), screenImage.getWidth(), screenImage.getHeight());
+		fontMetrics = renderingSurfaceGraphics.getFontMetrics(font);
 	}
 
 	/**
@@ -102,13 +119,12 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 			public void paintComponent(java.awt.Graphics g) {
 				super.paintComponent(g);
-				g.drawImage(screenImage, 0, 0, null);
+				g.drawImage(offscreenImage, 0, 0, null);
 			}
 		};
 		panel.setFocusable(true);
 
 		// Events
-		eventQueue = new Vector();
 		panel.addMouseMotionListener(this);
 		panel.addMouseListener(this);
 		panel.addKeyListener(this);
@@ -134,9 +150,12 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 	 */
 	public void clear(nk_color bgColor) {
 		Color c = new Color(bgColor.getR(), bgColor.getG(), bgColor.getB());
-		Graphics g = screenImage.getGraphics();
-		g.setColor(c);
-		g.fillRect(0, 0, screenImage.getWidth(), screenImage.getHeight());
+		renderingSurfaceGraphics.setColor(c);
+		if (offscreenImage == null) {
+			renderingSurfaceGraphics.fillRect(0, 0, renderingSurfaceWidth, renderingSurfaceHeight);
+		} else {
+			renderingSurfaceGraphics.fillRect(0, 0, offscreenImage.getWidth(), offscreenImage.getHeight());
+		}
 	}
 
 	/*
@@ -159,14 +178,14 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 						// System.out.println("MOUSE_MOVED");
 						nuklear.nk_input_motion(ctx, me.getX(), me.getY());
 					} else if (me.getID() == MouseEvent.MOUSE_PRESSED) {
-						// System.out.println("MOUSE_PRESSED");
+						//System.out.println("MOUSE_PRESSED");
 						// int Nuklear.NK_TRUE = (me.getID() ==
 						// MouseEvent.MOUSE_PRESSED) ? Nuklear.NK_TRUE :
 						// Nuklear.NK_FALSE;
 						int modifiers = me.getModifiersEx();
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
-							// System.out.println("MOUSE_PRESSED: BUTTON1");
+							//System.out.println("MOUSE_PRESSED: BUTTON1");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(), Nuklear4j.NK_TRUE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_PRESSED: BUTTON3");
@@ -178,7 +197,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 						// Nuklear.NK_FALSE;
 						int button = me.getButton();
 						if (button == MouseEvent.BUTTON1) {
-							// System.out.println("MOUSE_RELEASED: BUTTON1");
+							//System.out.println("MOUSE_RELEASED: BUTTON1");
 							nuklear.nk_input_button(ctx, nk_buttons.NK_BUTTON_LEFT, me.getX(), me.getY(), Nuklear4j.NK_FALSE);
 						} else if (button == MouseEvent.BUTTON3) {
 							// System.out.println("MOUSE_RELEASED: BUTTON3");
@@ -286,7 +305,7 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 		return createImage(image);
 	}
 	
-	public void setARGB(nk_image nuklearImage, int[] argb) {
+	public void setImageData(nk_image nuklearImage, int[] argb) {
 		BufferedImage image = (BufferedImage)imageMap.get(nuklearImage.getHandle().getId());
 		if (image.getType() != BufferedImage.TYPE_INT_ARGB) {
 			throw new IllegalStateException("Image type is not ARGB");
@@ -315,55 +334,58 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 
 	private void render(Vector commandList) {
 		int size = commandList.size();
+		
+		if (renderingSurfaceGraphics == null) {
+			return;
+		}
 
-		Graphics g = screenImage.getGraphics();
-		g.setFont(font);
+		renderingSurfaceGraphics.setFont(font);
 
 		for (int i = 0; i < size; i++) {
 			Command command = (Command) commandList.get(i);
 			if (command.getType() == Command.NK_COMMAND_SCISSOR) {
 				ScissorCommand sc = (ScissorCommand) command;
-				g.setClip(sc.x, sc.y, sc.w + 1, sc.h);
+				renderingSurfaceGraphics.setClip(sc.x, sc.y, sc.w + 1, sc.h);
 			} else if (command.getType() == Command.NK_COMMAND_LINE) {
 				LineCommand lc = (LineCommand) command;
-				g.setColor(new Color(lc.r, lc.g, lc.b, lc.a));
-				g.drawLine(lc.x0, lc.y0, lc.x1, lc.y1);
+				renderingSurfaceGraphics.setColor(new Color(lc.r, lc.g, lc.b, lc.a));
+				renderingSurfaceGraphics.drawLine(lc.x0, lc.y0, lc.x1, lc.y1);
 			} else if (command.getType() == Command.NK_COMMAND_RECT) {
 				RectCommand rc = (RectCommand) command;
-				g.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
+				renderingSurfaceGraphics.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
 				if (rc.rounded == Nuklear4j.NK_FALSE) {
-					g.drawRect(rc.x, rc.y, rc.w, rc.h);
+					renderingSurfaceGraphics.drawRect(rc.x, rc.y, rc.w, rc.h);
 				} else {
-					g.drawRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
+					renderingSurfaceGraphics.drawRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
 				}
 			} else if (command.getType() == Command.NK_COMMAND_RECT_FILLED) {
 				RectFilledCommand rc = (RectFilledCommand) command;
-				g.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
+				renderingSurfaceGraphics.setColor(new Color(rc.r, rc.g, rc.b, rc.a));
 				if (rc.rounded == Nuklear4j.NK_FALSE) {
-					g.fillRect(rc.x, rc.y, rc.w, rc.h);
+					renderingSurfaceGraphics.fillRect(rc.x, rc.y, rc.w, rc.h);
 				} else {
-					g.fillRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
+					renderingSurfaceGraphics.fillRoundRect(rc.x, rc.y, rc.w, rc.h, rc.rounded, rc.rounded);
 				}
 			} else if (command.getType() == Command.NK_COMMAND_CIRCLE) {
 				CircleCommand cc = (CircleCommand) command;
-				g.setColor(new Color(cc.r, cc.g, cc.b, cc.a));
-				g.drawOval(cc.x, cc.y, cc.w, cc.h);
+				renderingSurfaceGraphics.setColor(new Color(cc.r, cc.g, cc.b, cc.a));
+				renderingSurfaceGraphics.drawOval(cc.x, cc.y, cc.w, cc.h);
 			} else if (command.getType() == Command.NK_COMMAND_CIRCLE_FILLED) {
 				CircleFilledCommand cc = (CircleFilledCommand) command;
-				g.setColor(new Color(cc.r, cc.g, cc.b, cc.a));
-				g.fillOval(cc.x, cc.y, cc.w, cc.h);
+				renderingSurfaceGraphics.setColor(new Color(cc.r, cc.g, cc.b, cc.a));
+				renderingSurfaceGraphics.fillOval(cc.x, cc.y, cc.w, cc.h);
 			} else if (command.getType() == Command.NK_COMMAND_TRIANGLE) {
 				TriangleCommand tc = (TriangleCommand) command;
 				int[] xPoints = { tc.x0, tc.x1, tc.x2 };
 				int[] yPoints = { tc.y0, tc.y1, tc.y2 };
-				g.setColor(new Color(tc.r, tc.g, tc.b, tc.a));
-				g.drawPolygon(xPoints, yPoints, 3);
+				renderingSurfaceGraphics.setColor(new Color(tc.r, tc.g, tc.b, tc.a));
+				renderingSurfaceGraphics.drawPolygon(xPoints, yPoints, 3);
 			} else if (command.getType() == Command.NK_COMMAND_TRIANGLE_FILLED) {
 				TriangleFilledCommand tc = (TriangleFilledCommand) command;
 				int[] xPoints = { tc.x0, tc.x1, tc.x2 };
 				int[] yPoints = { tc.y0, tc.y1, tc.y2 };
-				g.setColor(new Color(tc.r, tc.g, tc.b, tc.a));
-				g.fillPolygon(xPoints, yPoints, 3);
+				renderingSurfaceGraphics.setColor(new Color(tc.r, tc.g, tc.b, tc.a));
+				renderingSurfaceGraphics.fillPolygon(xPoints, yPoints, 3);
 			} else if (command.getType() == Command.NK_COMMAND_TEXT) {
 				TextCommand tc = (TextCommand) command;
 
@@ -374,11 +396,11 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 				// System.out.println("draw text " + x + " " + y + " " + w + " "
 				// + h + " " + tc.s);
 
-				g.setColor(new Color(tc.bgR, tc.bgG, tc.bgB, tc.bgA));
-				g.fillRect(x, y, w, h);
-				g.setColor(new Color(tc.fgR, tc.fgG, tc.fgB, tc.fgA));
+				renderingSurfaceGraphics.setColor(new Color(tc.bgR, tc.bgG, tc.bgB, tc.bgA));
+				renderingSurfaceGraphics.fillRect(x, y, w, h);
+				renderingSurfaceGraphics.setColor(new Color(tc.fgR, tc.fgG, tc.fgB, tc.fgA));
 				int stringH = fontMetrics.getAscent();
-				g.drawString(tc.s, x, y + stringH);
+				renderingSurfaceGraphics.drawString(tc.s, x, y + stringH);
 
 			} else if (command.getType() == Command.NK_COMMAND_IMAGE) {
 				ImageCommand ic = (ImageCommand) command;
@@ -387,12 +409,12 @@ public class AWTBackend implements Backend, MouseMotionListener, MouseListener, 
 				int w = ic.w;
 				int h = ic.h;
 				BufferedImage image = (BufferedImage)imageMap.get(ic.id);
-				g.drawImage(image, x, y, w, h, null);
+				renderingSurfaceGraphics.drawImage(image, x, y, w, h, null);
 			}
 		}
 
 		if (panel != null) {
-			panel.paintImmediately(0, 0, screenImage.getWidth(), screenImage.getHeight());
+			panel.paintImmediately(0, 0, offscreenImage.getWidth(), offscreenImage.getHeight());
 		}
 
 	}
